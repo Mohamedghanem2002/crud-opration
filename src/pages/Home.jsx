@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import SplashScreen from "../components/SplashScreen";
 import TaskManagerLayout from "../components/Navbar/Navbar";
+import { Outlet } from "react-router-dom";
 
-function Home() {
+export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
@@ -15,7 +16,5 @@ function Home() {
 
   if (showSplash) return <SplashScreen />;
 
-  return <TaskManagerLayout />;
+  return <TaskManagerLayout><Outlet /></TaskManagerLayout>;
 }
-
-export default Home;

@@ -120,7 +120,6 @@ export default function TaskManagerLayout() {
         <main className="flex-1 p-4 overflow-y-auto">
           <Outlet />
         </main>
-
         <Footer />
       </div>
     </div>
