@@ -1,6 +1,6 @@
 // App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import TaskManagerLayout from "./components/Navbar/Navbar";
+import TaskManagerLayout from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Home from "./pages/Home";

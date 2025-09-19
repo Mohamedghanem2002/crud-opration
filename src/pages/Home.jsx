@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import SplashScreen from "../components/SplashScreen";
-import TaskManagerLayout from "../components/Navbar/Navbar";
+import TaskManagerLayout from "../components/Navbar";
 import { Outlet } from "react-router-dom";
 
 export default function Home() {
