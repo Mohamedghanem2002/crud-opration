@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, Outlet } from "react-router-dom";
+import { Footer } from "./Footer";
 
 export default function TaskManagerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -33,6 +34,7 @@ export default function TaskManagerLayout() {
         />
       )}
 
+      {/* Sidebar Mobile */}
       <motion.div
         initial={{ x: -250 }}
         animate={{ x: sidebarOpen ? 0 : -250 }}
@@ -63,6 +65,7 @@ export default function TaskManagerLayout() {
         </nav>
       </motion.div>
 
+      {/* Sidebar Desktop */}
       <div className="hidden md:flex md:flex-col w-64 bg-white shadow-lg h-full">
         <div className="flex items-center gap-2 p-4 border-b">
           <CheckSquare className="text-blue-500" size={24} />
@@ -82,7 +85,9 @@ export default function TaskManagerLayout() {
         </nav>
       </div>
 
+      {/* Main Area */}
       <div className="flex flex-col flex-1">
+        {/* Header */}
         <header className="flex items-center justify-between bg-white shadow-md px-4 py-3 gap-4">
           <button
             className="md:hidden"
@@ -112,9 +117,11 @@ export default function TaskManagerLayout() {
           </div>
         </header>
 
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-4 overflow-y-auto">
           <Outlet />
         </main>
+
+        <Footer />
       </div>
     </div>
   );

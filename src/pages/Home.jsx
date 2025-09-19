@@ -1,19 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SplashScreen from "../components/SplashScreen";
-import { Navigate } from "react-router-dom";
+import TaskManagerLayout from "../components/Navbar/Navbar";
 
 function Home() {
   const [showSplash, setShowSplash] = useState(true);
 
-  return (
-    <>
-      {showSplash ? (
-        <SplashScreen onFinish={() => setShowSplash(false)} />
-      ) : (
-        <Navigate to="/dashboard" replace />
-      )}
-    </>
-  );
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showSplash) return <SplashScreen />;
+
+  return <TaskManagerLayout />;
 }
 
 export default Home;
