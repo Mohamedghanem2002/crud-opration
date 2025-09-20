@@ -3,6 +3,7 @@ import SignIn from "./../components/SignIn";
 import SignUp from "./../components/SignUp";
 import ForgotPassword from "./../components/ForgotPassword";
 
+
 function AuthPage() {
   const { type } = useParams();
 

@@ -11,36 +11,36 @@ import {
   PlusCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link, Outlet } from "react-router-dom";
-import { Footer } from "./Footer";
-import { auth } from "./../../firebaseconfig";
+import { Link } from "react-router-dom";
+import { auth } from "../../firebaseconfig";
 import { signOut } from "firebase/auth";
+import { toast } from "react-hot-toast";
 
+const handleLogout = async () => {
+  try {
+    await signOut(auth); 
+    localStorage.removeItem("user");
+    window.location.reload();
+  } catch (error) {
+      toast.error("Logout failed:");
+      console.error("Logout failed:", error);
+  }
+};
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth); 
-      localStorage.removeItem("user");
-      window.location.reload();
-    } catch (error) {
-        toast.error("Logout failed:");
-        console.error("Logout failed:", error);
-    }
-  };
-
-export default function TaskManagerLayout() {
+export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const menuItems = [
-    { id: 1, name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "dashboard" },
-    { id: 2, name: "Tasks", icon: <CheckSquare size={20} />, path: "tasks" },
-    { id: 3, name: "Projects", icon: <Folder size={20} />, path: "projects" },
-    { id: 4, name: "Settings", icon: <Settings size={20} />, path: "settings" },
-    { id: 5, name: "Profile", icon: <User size={20} />, path: "profile" },
+    { id: 1, name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/dashboard" },
+    { id: 2, name: "Tasks", icon: <CheckSquare size={20} />, path: "/tasks" },
+    { id: 3, name: "Projects", icon: <Folder size={20} />, path: "/projects" },
+    { id: 4, name: "Settings", icon: <Settings size={20} />, path: "/settings" },
+    { id: 5, name: "Profile", icon: <User size={20} />, path: "/profile" },
   ];
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <>
+      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-30 z-30 md:hidden"
@@ -48,7 +48,7 @@ export default function TaskManagerLayout() {
         />
       )}
 
-      {/* Sidebar Mobile */}
+      {/* Mobile Sidebar */}
       <motion.div
         initial={{ x: -250 }}
         animate={{ x: sidebarOpen ? 0 : -250 }}
@@ -64,7 +64,7 @@ export default function TaskManagerLayout() {
             <X size={22} />
           </button>
         </div>
-        <nav className="mt-6">
+        <nav className="mt-6  ">
           {menuItems.map((item) => (
             <Link
               key={item.id}
@@ -79,13 +79,13 @@ export default function TaskManagerLayout() {
         </nav>
       </motion.div>
 
-      {/* Sidebar Desktop */}
+      {/* Desktop Sidebar */}
       <div className="hidden md:flex md:flex-col w-64 bg-white shadow-lg h-full">
         <div className="flex items-center gap-2 p-4 border-b">
           <CheckSquare className="text-blue-500" size={24} />
           <h1 className="text-xl font-bold text-gray-800">Task Manager</h1>
         </div>
-        <nav className="mt-6">
+        <nav className="mt-6 mb-6">
           {menuItems.map((item) => (
             <Link
               key={item.id}
@@ -99,49 +99,44 @@ export default function TaskManagerLayout() {
         </nav>
       </div>
 
-      {/* Main Area */}
-      <div className="flex flex-col flex-1">
-        {/* Header */}
-        <header className="flex items-center justify-between bg-white shadow-md px-4 py-3 gap-4">
-          <button
-            className="md:hidden"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+      {/* Header - positioned absolute to span full width */}
+      <header className="fixed top-0 right-0 left-64 bg-white shadow-md px-4 py-3 z-10 md:flex hidden items-center justify-between mb-6">
+        <div className="flex-1 max-w-md relative">
+          <input
+            type="text"
+            placeholder="Search tasks, projects..."
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Link 
+            to="/add"
+            className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition"
           >
-            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+            <PlusCircle size={18} />
+            <span>Add Task</span>
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 border border-blue-600 text-blue-600 hover:text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition"
+          >
+            <span>Log Out</span>
           </button>
+        </div>
+      </header>
 
-          <div className="flex-1 max-w-md relative">
-            <input
-              type="text"
-              placeholder="Search tasks, projects..."
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            <Search
-              className="absolute left-3 top-2.5 text-gray-400"
-              size={18}
-            />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition">
-              <PlusCircle size={18} />
-              <span>Add Task</span>
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 border border-blue-600 text-blue-600 hover:text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition"
-            >
-              <span>Log Out</span>
-            </button>
-            {/* <span className="font-medium text-gray-700">Rahma</span> */}
-          </div>
-        </header>
-
-        <main className="flex-1 p-4 overflow-y-auto">
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
-    </div>
+      {/* Mobile Header */}
+      <header className="md:hidden fixed top-0 left-0 right-0 bg-white shadow-md px-4 py-3 z-50 flex items-center justify-between mb-6">
+        <button onClick={() => setSidebarOpen(!sidebarOpen)}>
+          {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+        <h1 className="text-lg font-bold">Task Manager</h1>
+        <Link to="/add" className="bg-blue-500 text-white p-2 rounded">
+          <PlusCircle size={18} />
+        </Link>
+      </header>
+    </>
   );
 }
