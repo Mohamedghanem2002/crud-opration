@@ -1,81 +1,152 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import toast from 'react-hot-toast';
 
-export default function EditItem({ task, onAdd }) {
+export default function EditItem({ taskId, onClose, onTaskUpdated }) {
+  const BASE_URL = "https://localhost:7048/api/TaskModels";
+
   const [taskData, setTaskData] = useState({
+    id: 0,
     title: "",
     description: "",
     dueDate: "",
     priority: "Low",
   });
 
-  // عبّي البيانات عند التعديل
+  const [loading, setLoading] = useState(false);
+
+  // 🔹 Fetch existing task when component mounts
   useEffect(() => {
-    if (task) {
-      setTaskData({ ...task });
-    }
-  }, [task]);
+    if (!taskId) return;
 
-  const handleSubmit = () => {
-    if (!taskData.title || !taskData.description) return;
+    const fetchTask = async () => {
+      try {
+        setLoading(true);
+        const task = (await axios.get(`${BASE_URL}/${taskId}`)).data;
 
-    const finalTask = {
-      ...taskData,
-      status: taskData.status || "pending",
-      dueDate: taskData.dueDate || "No deadline",
+        setTaskData({
+          id: task.id,
+          title: task.title,
+          description: task.description || "",
+          dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
+          priority: task.priority,
+        });
+      } catch (error) {
+        console.error(error);
+        toast.error("❌ Failed to load task for editing.");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    onAdd(finalTask);
+    fetchTask();
+  }, [taskId]);
 
-    // لما يكون add جديد نفضي الفورم
-    if (!task) {
-      setTaskData({ title: "", description: "", dueDate: "", priority: "Low" });
+  // 🔹 Handle form submit (PUT)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!taskData.title || !taskData.description) {
+      toast.error("⚠️ Title and Description are required!");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const payload = {
+        id: taskData.id,
+        title: taskData.title,
+        description: taskData.description,
+        dueDate: taskData.dueDate
+          ? new Date(taskData.dueDate).toISOString()
+          : null,
+        priority: taskData.priority,
+      };
+
+      await axios.put(`${BASE_URL}/${taskData.id}`, payload);
+
+      toast.success("✅ Task updated successfully!");
+
+      if (onTaskUpdated) onTaskUpdated(payload); // update parent state
+      if (onClose) onClose(); // close modal or form
+    } catch (error) {
+      console.error("❌ Error updating task:", error.response || error);
+      toast.error("❌ Failed to update task!");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Title */}
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-semibold text-slate-500" htmlFor="title">Title</label>
+        <label className="text-sm font-semibold text-slate-500" htmlFor="title">
+          Title
+        </label>
         <input
           type="text"
           id="title"
-          placeholder="Enter task title"
           className="border border-slate-300 rounded-lg px-3 py-2 text-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={taskData.title}
           onChange={(e) => setTaskData({ ...taskData, title: e.target.value })}
         />
       </div>
 
+      {/* Description */}
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-semibold text-slate-500" htmlFor="description">Description</label>
+        <label
+          className="text-sm font-semibold text-slate-500"
+          htmlFor="description"
+        >
+          Description
+        </label>
         <textarea
           id="description"
           rows={4}
-          placeholder="Write task description..."
           className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={taskData.description}
-          onChange={(e) => setTaskData({ ...taskData, description: e.target.value })}
+          onChange={(e) =>
+            setTaskData({ ...taskData, description: e.target.value })
+          }
         />
       </div>
 
+      {/* Due Date */}
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-semibold text-slate-500" htmlFor="dueDate">Due Date (optional)</label>
+        <label
+          className="text-sm font-semibold text-slate-500"
+          htmlFor="dueDate"
+        >
+          Due Date
+        </label>
         <input
           type="date"
           id="dueDate"
           className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={taskData.dueDate}
-          onChange={(e) => setTaskData({ ...taskData, dueDate: e.target.value })}
+          onChange={(e) =>
+            setTaskData({ ...taskData, dueDate: e.target.value })
+          }
         />
       </div>
 
+      {/* Priority */}
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-semibold text-slate-500" htmlFor="priority">Priority</label>
+        <label
+          className="text-sm font-semibold text-slate-500"
+          htmlFor="priority"
+        >
+          Priority
+        </label>
         <select
           id="priority"
           className="border border-slate-300 rounded-lg px-3 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={taskData.priority}
-          onChange={(e) => setTaskData({ ...taskData, priority: e.target.value })}
+          onChange={(e) =>
+            setTaskData({ ...taskData, priority: e.target.value })
+          }
         >
           <option value="High">High</option>
           <option value="Medium">Medium</option>
@@ -83,16 +154,27 @@ export default function EditItem({ task, onAdd }) {
         </select>
       </div>
 
-      <button
-        className={`w-full font-semibold py-2.5 rounded-lg transition-colors ${taskData.title && taskData.description
-            ? "bg-blue-600 hover:bg-blue-700 text-white"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+      {/* Action buttons */}
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={loading}
+          className={`w-full font-semibold py-2.5 rounded-lg transition-colors ${
+            loading
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
           }`}
-        onClick={handleSubmit}
-        disabled={!taskData.title || !taskData.description}
-      >
-        {task ? "Save Changes" : "Add Task"}
-      </button>
-    </div>
+        >
+          {loading ? "Saving..." : "Update Task"}
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-full font-semibold py-2.5 rounded-lg bg-gray-400 text-white"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 }
