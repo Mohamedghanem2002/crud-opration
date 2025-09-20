@@ -1,0 +1,39 @@
+.container-auth{
+    min-height: 65vh;
+}
+
+.container-auth title{
+    font-size: 1.5rem !important;
+    color: var(--black-color);
+}
+
+.form-label{
+    font-size: 0.8rem !important;
+    color: var(--gray-color);
+    text-transform: capitalize;
+}
+
+.link-txt{
+    color: var(--gray-color);
+    font-weight: 600;
+}
+
+.link-txt a{
+    color: var(--primary);
+}
+
+.link-txt a:hover{
+    color: var(--secondary-hoverd);
+}
+/* 
+.eye-icon{
+    top: 0;
+    transform: translateY(150%);
+    cursor: pointer;
+} */
+
+.eye-icon {
+    top: 50%;
+    transform: translateY(30%);
+    cursor: pointer;
+}

@@ -13,6 +13,20 @@ import {
 import { motion } from "framer-motion";
 import { Link, Outlet } from "react-router-dom";
 import { Footer } from "./Footer";
+import { auth } from "./../../firebaseconfig";
+import { signOut } from "firebase/auth";
+
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth); 
+      localStorage.removeItem("user");
+      window.location.reload();
+    } catch (error) {
+        toast.error("Logout failed:");
+        console.error("Logout failed:", error);
+    }
+  };
 
 export default function TaskManagerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -113,7 +127,13 @@ export default function TaskManagerLayout() {
               <PlusCircle size={18} />
               <span>Add Task</span>
             </button>
-            <span className="font-medium text-gray-700">Rahma</span>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 border border-blue-600 text-blue-600 hover:text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition"
+            >
+              <span>Log Out</span>
+            </button>
+            {/* <span className="font-medium text-gray-700">Rahma</span> */}
           </div>
         </header>
 

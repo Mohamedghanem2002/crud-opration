@@ -4,9 +4,10 @@ import TaskManagerLayout from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Home from "./pages/Home";
-
+import Auth from "./pages/AuthPage"
 import AddItem from "./pages/AddItem";
 import EditItem from "./pages/EditItem";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
@@ -19,7 +20,9 @@ function App() {
           <Route path="add" element={<AddItem />} />
           <Route path="edit/:id" element={<EditItem />} />
         </Route>
+        <Route path="/auth/:type" element={<Auth />} />
       </Routes>
+      <Toaster position="top-right" reverseOrder={false} />
     </BrowserRouter>
   );
 }
