@@ -7,7 +7,9 @@ import Home from "./pages/Home";
 import Auth from "./pages/AuthPage";
 import AddItem from "./pages/AddItem";
 import EditItem from "./pages/EditItem";
+import Profile from "./pages/Profile";
 import { Toaster } from "react-hot-toast";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -15,13 +17,48 @@ function App() {
       <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         <Route path="/" element={<Home />}>
-          {/* <Route index element={<Dashboard />} /> */}
-          <Route path="dashboard" element={<Dashboard />} />
-          {/* <Route path="tasks" element={<Tasks />} /> */}
-          <Route path="Tasks" element={<TaskList />} />
-          <Route path="add" element={<AddItem />} />
-          <Route path="edit/:id" element={<EditItem />} />
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="Tasks"
+            element={
+              <ProtectedRoute>
+                <TaskList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="add"
+            element={
+              <ProtectedRoute>
+                <AddItem />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="edit/:id"
+            element={
+              <ProtectedRoute>
+                <EditItem />
+              </ProtectedRoute>
+            }
+          />
         </Route>
+
         <Route path="/auth/:type" element={<Auth />} />
       </Routes>
     </BrowserRouter>
