@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
+import { db } from "../../firebaseconfig"; // adjust path if needed
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 export default function EditItem({ taskId, onClose, onTaskUpdated }) {
-  const BASE_URL = "https://localhost:7048/api/TaskModels";
-  // const BASE_URL = "http://crudapi.runasp.net/api/taskmodels";
-
   const [taskData, setTaskData] = useState({
-    id: 0,
+    id: "",
     title: "",
     description: "",
     dueDate: "",
@@ -23,15 +21,22 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
     const fetchTask = async () => {
       try {
         setLoading(true);
-        const task = (await axios.get(`${BASE_URL}/${taskId}`)).data;
 
-        setTaskData({
-          id: task.id,
-          title: task.title,
-          description: task.description || "",
-          dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
-          priority: task.priority,
-        });
+        const taskRef = doc(db, "tasks", taskId);
+        const snapshot = await getDoc(taskRef);
+
+        if (snapshot.exists()) {
+          const task = snapshot.data();
+          setTaskData({
+            id: snapshot.id,
+            title: task.title,
+            description: task.description || "",
+            dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
+            priority: task.priority,
+          });
+        } else {
+          toast.error("Task not found!");
+        }
       } catch (error) {
         console.error(error);
         toast.error("❌ Failed to load task for editing.");
@@ -43,7 +48,7 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
     fetchTask();
   }, [taskId]);
 
-  // 🔹 Handle form submit (PUT)
+  // 🔹 Handle form submit (update in Firestore)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -55,8 +60,8 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
     try {
       setLoading(true);
 
+      const taskRef = doc(db, "tasks", taskData.id);
       const payload = {
-        id: taskData.id,
         title: taskData.title,
         description: taskData.description,
         dueDate: taskData.dueDate
@@ -65,14 +70,14 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
         priority: taskData.priority,
       };
 
-      await axios.put(`${BASE_URL}/${taskData.id}`, payload);
+      await updateDoc(taskRef, payload);
 
       toast.success("✅ Task updated successfully!");
 
-      if (onTaskUpdated) onTaskUpdated(payload); // update parent state
-      if (onClose) onClose(); // close modal or form
+      if (onTaskUpdated) onTaskUpdated({ id: taskData.id, ...payload });
+      if (onClose) onClose();
     } catch (error) {
-      console.error("❌ Error updating task:", error.response || error);
+      console.error("❌ Error updating task:", error);
       toast.error("❌ Failed to update task!");
     } finally {
       setLoading(false);

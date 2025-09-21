@@ -11,16 +11,64 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { db } from "../../firebaseconfig"; 
+import { collection, getDocs } from "firebase/firestore";
+import { useEffect, useState } from "react";
 
-const taskCompletionData = [
-  { month: "Jan", completed: 30, pending: 20 },
-  { month: "Feb", completed: 45, pending: 15 },
-  { month: "Mar", completed: 50, pending: 10 },
-  { month: "Apr", completed: 70, pending: 5 },
-  { month: "May", completed: 60, pending: 20 },
-];
+// const taskCompletionData = [
+//   { month: "Jan", completed: 30, pending: 20 },
+//   { month: "Feb", completed: 45, pending: 15 },
+//   { month: "Mar", completed: 50, pending: 10 },
+//   { month: "Apr", completed: 70, pending: 5 },
+//   { month: "May", completed: 60, pending: 20 },
+// ];
 
 export default function Dashboard() {
+  const [tasks , setTasks] = useState([]);
+  const [stats , setStats] = useState({
+    completed: 0,
+    pending: 0,
+    dueToday: 0,
+  });
+  const [chartData, setChartData] = useState([]);
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const snapshot = await getDocs(collection(db, "tasks"));
+      const tasksData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTasks(tasksData);
+
+      // 🔹 Process stats
+      const today = new Date().toISOString().split("T")[0];
+      const completed = tasksData.filter((t) => t.status === "completed").length;
+      const pending = tasksData.filter((t) => t.status !== "completed").length;
+      const dueToday = tasksData.filter(
+        (t) => t.dueDate && t.dueDate.split("T")[0] === today
+      ).length;
+
+      setStats({ completed, pending, dueToday });
+
+      // 🔹 Build chart data by month
+      const grouped = {};
+      tasksData.forEach((t) => {
+        const month = new Date(t.dueDate || new Date()).toLocaleString("default", {
+          month: "short",
+        });
+        if (!grouped[month]) grouped[month] = { month, completed: 0, pending: 0 };
+        if (t.status === "completed") {
+          grouped[month].completed++;
+        } else {
+          grouped[month].pending++;
+        }
+      });
+
+      setChartData(Object.values(grouped));
+    };
+
+    fetchTasks();
+  }, []);
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -33,7 +81,7 @@ export default function Dashboard() {
           <CheckSquare className="text-blue-500" size={30} />
           <CardContent>
             <h2 className="text-lg font-semibold text-gray-800">Completed</h2>
-            <p className="text-2xl font-bold text-gray-900">120</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
           </CardContent>
         </Card>
 
@@ -41,7 +89,7 @@ export default function Dashboard() {
           <ListTodo className="text-yellow-500" size={30} />
           <CardContent>
             <h2 className="text-lg font-semibold text-gray-800">Pending</h2>
-            <p className="text-2xl font-bold text-gray-900">35</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
           </CardContent>
         </Card>
 
@@ -49,7 +97,7 @@ export default function Dashboard() {
           <Calendar className="text-green-500" size={30} />
           <CardContent>
             <h2 className="text-lg font-semibold text-gray-800">Due Today</h2>
-            <p className="text-2xl font-bold text-gray-900">5</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.dueToday}</p>
           </CardContent>
         </Card>
       </div>
@@ -63,7 +111,7 @@ export default function Dashboard() {
             Task Completion Trend
           </h2>
           <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={taskCompletionData}>
+            <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
@@ -81,7 +129,7 @@ export default function Dashboard() {
             Monthly Tasks
           </h2>
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={taskCompletionData}>
+            <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />

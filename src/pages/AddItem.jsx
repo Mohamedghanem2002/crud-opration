@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
-import toast from 'react-hot-toast';
+import { db } from "../../firebaseconfig";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
+
+import toast from 'react-hot-toast';
+import {ref } from "firebase/storage";
 export default function AddItem() {
-  const BASE_URL = "https://localhost:7048/api/TaskModels";
-  // const BASE_URL = "http://crudapi.runasp.net/api/taskmodels";
+  // const BASE_URL = "https://localhost:7048/api/TaskModels";
+  // // const BASE_URL = "http://crudapi.runasp.net/api/taskmodels";
   const [taskData, setTaskData] = useState({
     title: "",
     description: "",
@@ -14,7 +18,7 @@ export default function AddItem() {
 
   const [loading, setLoading] = useState(false);
 
-  // 🔹 POST method to save task
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -27,14 +31,17 @@ export default function AddItem() {
     try {
       setLoading(true);
 
-      const payload = {
+      await addDoc(collection(db, "tasks"), {
         title: taskData.title,
         description: taskData.description,
-        dueDate: taskData.dueDate ? new Date(taskData.dueDate).toISOString() : null,
+        dueDate: taskData.dueDate
+          ? new Date(taskData.dueDate).toISOString()
+          : null,
         priority: taskData.priority,
-      };
+        createdAt: serverTimestamp(),
+      });
 
-      await axios.post(BASE_URL, payload); // 🔹 POST request
+       
 
       toast.success(" Task created successfully!");
 
