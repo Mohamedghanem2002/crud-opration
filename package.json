@@ -13,6 +13,7 @@
     "axios": "^1.12.2",
     "firebase": "^12.3.0",
     "framer-motion": "^12.23.16",
+    "libphonenumber-js": "^1.12.17",
     "lucide-react": "^0.544.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

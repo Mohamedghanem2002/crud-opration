@@ -71,10 +71,19 @@ function SignUp() {
       await setDoc(doc(db, "users", userCredential.user.uid), {
         name,
         email,
-        phone,
+        phones: [phone], 
+        bio: "",
+        role: "",
+        dob: "",
+        links: [],
+        memberSince: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        completedTasks: 0,
+        pendingTasks: 0,
+        projectsCount: 0,
       });
       setSuccess("Account created successfully! ");
-      setTimeout(() => navigate("/auth/sign-in"), 1500);
+      setTimeout(() => navigate("/auth/sign-in"), 1000);
     } catch (err) {
       setError(getErrorMessage(err.code));
     }

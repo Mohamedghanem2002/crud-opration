@@ -7,8 +7,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import toast from 'react-hot-toast';
 import {ref } from "firebase/storage";
 export default function AddItem() {
-  // const BASE_URL = "https://localhost:7048/api/TaskModels";
-  // // const BASE_URL = "http://crudapi.runasp.net/api/taskmodels";
+  
   const [taskData, setTaskData] = useState({
     title: "",
     description: "",
