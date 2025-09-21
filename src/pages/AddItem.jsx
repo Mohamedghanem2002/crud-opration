@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import axios from "axios";
 import { db } from "../../firebaseconfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
-
-import toast from 'react-hot-toast';
-import {ref } from "firebase/storage";
+import toast from "react-hot-toast";
+import { ref } from "firebase/storage";
 export default function AddItem() {
-  
+  const navigate = useNavigate();
+
   const [taskData, setTaskData] = useState({
     title: "",
     description: "",
@@ -17,7 +18,6 @@ export default function AddItem() {
 
   const [loading, setLoading] = useState(false);
 
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -40,8 +40,6 @@ export default function AddItem() {
         createdAt: serverTimestamp(),
       });
 
-       
-
       toast.success(" Task created successfully!");
 
       // Reset form
@@ -51,6 +49,7 @@ export default function AddItem() {
         dueDate: "",
         priority: "Low",
       });
+      navigate("/Tasks");
     } catch (error) {
       console.error(" Error creating task:", error.response || error);
       toast.error(" Failed to create task!");
@@ -78,7 +77,10 @@ export default function AddItem() {
 
       {/* Description */}
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-semibold text-slate-500" htmlFor="description">
+        <label
+          className="text-sm font-semibold text-slate-500"
+          htmlFor="description"
+        >
           Description
         </label>
         <textarea
@@ -87,13 +89,18 @@ export default function AddItem() {
           placeholder="Write task description..."
           className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={taskData.description}
-          onChange={(e) => setTaskData({ ...taskData, description: e.target.value })}
+          onChange={(e) =>
+            setTaskData({ ...taskData, description: e.target.value })
+          }
         />
       </div>
 
       {/* Due Date */}
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-semibold text-slate-500" htmlFor="dueDate">
+        <label
+          className="text-sm font-semibold text-slate-500"
+          htmlFor="dueDate"
+        >
           Due Date (optional)
         </label>
         <input
@@ -101,20 +108,27 @@ export default function AddItem() {
           id="dueDate"
           className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={taskData.dueDate}
-          onChange={(e) => setTaskData({ ...taskData, dueDate: e.target.value })}
+          onChange={(e) =>
+            setTaskData({ ...taskData, dueDate: e.target.value })
+          }
         />
       </div>
 
       {/* Priority */}
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-semibold text-slate-500" htmlFor="priority">
+        <label
+          className="text-sm font-semibold text-slate-500"
+          htmlFor="priority"
+        >
           Priority
         </label>
         <select
           id="priority"
           className="border border-slate-300 rounded-lg px-3 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={taskData.priority}
-          onChange={(e) => setTaskData({ ...taskData, priority: e.target.value })}
+          onChange={(e) =>
+            setTaskData({ ...taskData, priority: e.target.value })
+          }
         >
           <option value="High">High</option>
           <option value="Medium">Medium</option>
