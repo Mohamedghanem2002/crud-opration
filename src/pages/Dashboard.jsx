@@ -1,5 +1,5 @@
 import { Card, CardContent } from "../components/Card";
-import { CheckSquare, ListTodo, Calendar, BarChart2 } from "lucide-react";
+import { CheckSquare, ListTodo, Calendar, BarChart2, Users } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -11,10 +11,17 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { db } from "../../firebaseconfig"; 
+import { db } from "../../firebaseconfig";
 import { collection, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+
+// const taskCompletionData = [
+//   { month: "Jan", completed: 30, pending: 20 },
+//   { month: "Feb", completed: 45, pending: 15 },
+//   { month: "Mar", completed: 50, pending: 10 },
+//   { month: "Apr", completed: 70, pending: 5 },
+//   { month: "May", completed: 60, pending: 20 },
+// ];
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
@@ -22,17 +29,34 @@ export default function Dashboard() {
     completed: 0,
     pending: 0,
     dueToday: 0,
+    invitations: 0,
+    activeProjects: 0,
   });
   const [chartData, setChartData] = useState([]);
-  const { t } = useTranslation();
-
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchData = async () => {
+      // 🔹 Fetch tasks
       const snapshot = await getDocs(collection(db, "tasks"));
       const tasksData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+
+      // 🔹 Fetch invitations
+      const invitationsSnap = await getDocs(collection(db, "invitations"));
+      const invitationsData = invitationsSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      // 🔹 Fetch projects
+      const projectsSnap = await getDocs(collection(db, "projects"));
+      const projectsData = projectsSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      // Set tasks
       setTasks(tasksData);
 
       // 🔹 Stats
@@ -43,7 +67,15 @@ export default function Dashboard() {
         (t) => t.dueDate && t.dueDate.split("T")[0] === today
       ).length;
 
-      setStats({ completed, pending, dueToday });
+      const invitations = invitationsData.filter(
+        (i) => i.status === "pending"
+      ).length;
+
+      const activeProjects = projectsData.filter(
+        (p) => p.status === "active"
+      ).length;
+
+      setStats({ completed, pending, dueToday, invitations, activeProjects });
 
       // 🔹 Chart Data
       const grouped = {};
@@ -62,7 +94,7 @@ export default function Dashboard() {
       setChartData(Object.values(grouped));
     };
 
-    fetchTasks();
+    fetchData();
   }, []);
 
   return (
@@ -72,7 +104,7 @@ export default function Dashboard() {
       <p className="text-gray-600">{t("overview")}</p>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
         <Card className="rounded-2xl shadow p-4 bg-white flex items-center gap-4">
           <CheckSquare className="text-blue-500" size={30} />
           <CardContent>
@@ -94,6 +126,24 @@ export default function Dashboard() {
           <CardContent>
             <h2 className="text-lg font-semibold text-gray-800">{t("dueToday")}</h2>
             <p className="text-2xl font-bold text-gray-900">{stats.dueToday}</p>
+          </CardContent>
+        </Card>
+
+        {/* 🔹 Active Projects */}
+        <Card className="rounded-2xl shadow p-4 bg-white flex items-center gap-4">
+          <ListTodo className="text-purple-500" size={30} />
+          <CardContent>
+            <h2 className="text-lg font-semibold text-gray-800">Active Projects</h2>
+            <p className="text-2xl font-bold text-gray-900">{stats.activeProjects}</p>
+          </CardContent>
+        </Card>
+
+        {/* 🔹 Pending Invitations */}
+        <Card className="rounded-2xl shadow p-4 bg-white flex items-center gap-4">
+          <Users className="text-red-500" size={30} />
+          <CardContent>
+            <h2 className="text-lg font-semibold text-gray-800">Pending Invites</h2>
+            <p className="text-2xl font-bold text-gray-900">{stats.invitations}</p>
           </CardContent>
         </Card>
       </div>
