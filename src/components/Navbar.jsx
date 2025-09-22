@@ -18,12 +18,12 @@ import { toast } from "react-hot-toast";
 
 const handleLogout = async () => {
   try {
-    await signOut(auth); 
+    await signOut(auth);
     localStorage.removeItem("user");
     window.location.reload();
   } catch (error) {
-      toast.error("Logout failed:");
-      console.error("Logout failed:", error);
+    toast.error("Logout failed:");
+    console.error("Logout failed:", error);
   }
 };
 
@@ -31,10 +31,20 @@ export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const menuItems = [
-    { id: 1, name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/dashboard" },
+    {
+      id: 1,
+      name: "Dashboard",
+      icon: <LayoutDashboard size={20} />,
+      path: "/dashboard",
+    },
     { id: 2, name: "Tasks", icon: <CheckSquare size={20} />, path: "/tasks" },
     { id: 3, name: "Projects", icon: <Folder size={20} />, path: "/projects" },
-    { id: 4, name: "Settings", icon: <Settings size={20} />, path: "/settings" },
+    {
+      id: 4,
+      name: "Settings",
+      icon: <Settings size={20} />,
+      path: "/settings",
+    },
     { id: 5, name: "Profile", icon: <User size={20} />, path: "/profile" },
   ];
 
@@ -82,9 +92,12 @@ export default function Navbar() {
       {/* Desktop Sidebar */}
       <div className="hidden md:flex md:flex-col w-64 bg-white shadow-lg h-full">
         <div className="flex items-center gap-2 p-4 border-b">
-          <CheckSquare className="text-blue-500" size={24} />
-          <h1 className="text-xl font-bold text-gray-800">Task Manager</h1>
+          <Link to="/" className="flex items-center gap-2">
+            <CheckSquare className="text-blue-500" size={24} />
+            <h1 className="text-xl font-bold text-gray-800">Task Manager</h1>
+          </Link>
         </div>
+
         <nav className="mt-6 mb-6">
           {menuItems.map((item) => (
             <Link
@@ -111,7 +124,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          <Link 
+          <Link
             to="/add"
             className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition"
           >
@@ -132,7 +145,9 @@ export default function Navbar() {
         <button onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
-        <h1 className="text-lg font-bold">Task Manager</h1>
+        <Link to="/" className="text-lg font-bold">
+          Task Manager
+        </Link>
         <Link to="/add" className="bg-blue-500 text-white p-2 rounded">
           <PlusCircle size={18} />
         </Link>
