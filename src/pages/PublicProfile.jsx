@@ -6,11 +6,13 @@ import LoadingOverlay from "../components/loader";
 import ProfileDetails from "../components/profile/ProfileDetails";
 import { Link, useParams } from "react-router-dom";
 import { CheckSquare } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function PublicProfile() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const { userId } = useParams();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,58 +33,58 @@ export default function PublicProfile() {
           setUserData(null);
         }
       } catch (err) {
-        toast.error("Error fetching public profile:", err);
+        toast.error(t("fetchError"));
         setUserData(null);
       } finally {
-        setLoading(false); 
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [userId]);
+  }, [userId, t]);
 
   if (loading) return <LoadingOverlay />;
-  if (!userData) return(
-  <div className="h-screen flex justify-center items-center">
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="bg-white shadow rounded-2xl p-6 space-y-6">
-        <p className="text-center text-gray-500">User not found</p>
-        <div className="flex gap-4 mt-4">
-          <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mx-auto">
-            <Link to="/">Back Home</Link>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  );
 
-  return (
-    <>
+  if (!userData)
+    return (
       <div className="h-screen flex justify-center items-center">
         <div className="p-6 max-w-4xl mx-auto">
           <div className="bg-white shadow rounded-2xl p-6 space-y-6">
-            <div className="flex items-center justify-center gap-1 mb-6">
-              <CheckSquare className="text-blue-950" size={24} />
-              <h1 className="text-xl font-extrabold tracking-wide text-blue-950">
-                Task Manager
-              </h1>
-            </div>
-            <ProfileDetails
-              userData={userData}
-              formData={{}}
-              setFormData={() => {}}
-              editMode={false}
-              isPublic={true}
-            />
+            <p className="text-center text-gray-500">{t("userNotFound")}</p>
             <div className="flex gap-4 mt-4">
               <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mx-auto">
-                <Link to="/auth/sign-up">Join Us</Link>
+                <Link to="/">{t("backHome")}</Link>
               </button>
             </div>
           </div>
         </div>
       </div>
-    </>
+    );
+
+  return (
+    <div className="h-screen flex justify-center items-center">
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="bg-white shadow rounded-2xl p-6 space-y-6">
+          <div className="flex items-center justify-center gap-1 mb-6">
+            <CheckSquare className="text-blue-950" size={24} />
+            <h1 className="text-xl font-extrabold tracking-wide text-blue-950">
+              {t("appName")}
+            </h1>
+          </div>
+          <ProfileDetails
+            userData={userData}
+            formData={{}}
+            setFormData={() => {}}
+            editMode={false}
+            isPublic={true}
+          />
+          <div className="flex gap-4 mt-4">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mx-auto">
+              <Link to="/auth/sign-up">{t("joinUs")}</Link>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

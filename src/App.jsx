@@ -11,8 +11,11 @@ import Profile from "./pages/Profile";
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicProfile from "./pages/PublicProfile";
+import Settings from "./pages/Settings";
+import { useTranslation } from 'react-i18next';
 
 function App() {
+  
   return (
     <BrowserRouter>
       <Toaster position="top-right" reverseOrder={false} />
@@ -55,6 +58,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <EditItem />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             }
           />

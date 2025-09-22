@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { db } from "../../firebaseconfig";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { useTranslation } from "react-i18next";
 
 export default function EditItem({ taskId, onClose, onTaskUpdated }) {
+  const { t } = useTranslation(); // ✅ use translation
   const [taskData, setTaskData] = useState({
     id: "",
     title: "",
@@ -14,7 +16,6 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
 
   const [loading, setLoading] = useState(false);
 
-  // 🔹 Fetch existing task when component mounts
   useEffect(() => {
     if (!taskId) return;
 
@@ -48,10 +49,8 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
     fetchTask();
   }, [taskId]);
 
-  // 🔹 Handle form submit (update in Firestore)
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!taskData.title || !taskData.description) {
       toast.error("⚠️ Title and Description are required!");
       return;
@@ -59,7 +58,6 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
 
     try {
       setLoading(true);
-
       const taskRef = doc(db, "tasks", taskData.id);
       const payload = {
         title: taskData.title,
@@ -71,9 +69,7 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
       };
 
       await updateDoc(taskRef, payload);
-
       toast.success("✅ Task updated successfully!");
-
       if (onTaskUpdated) onTaskUpdated({ id: taskData.id, ...payload });
       if (onClose) onClose();
     } catch (error) {
@@ -89,7 +85,7 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
       {/* Title */}
       <div className="flex flex-col gap-1">
         <label className="text-sm font-semibold text-slate-500" htmlFor="title">
-          Title
+          {t("title")}
         </label>
         <input
           type="text"
@@ -102,11 +98,8 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
 
       {/* Description */}
       <div className="flex flex-col gap-1">
-        <label
-          className="text-sm font-semibold text-slate-500"
-          htmlFor="description"
-        >
-          Description
+        <label className="text-sm font-semibold text-slate-500" htmlFor="description">
+          {t("description")}
         </label>
         <textarea
           id="description"
@@ -121,42 +114,32 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
 
       {/* Due Date */}
       <div className="flex flex-col gap-1">
-        <label
-          className="text-sm font-semibold text-slate-500"
-          htmlFor="dueDate"
-        >
-          Due Date
+        <label className="text-sm font-semibold text-slate-500" htmlFor="dueDate">
+          {t("dueDate")}
         </label>
         <input
           type="date"
           id="dueDate"
           className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={taskData.dueDate}
-          onChange={(e) =>
-            setTaskData({ ...taskData, dueDate: e.target.value })
-          }
+          onChange={(e) => setTaskData({ ...taskData, dueDate: e.target.value })}
         />
       </div>
 
       {/* Priority */}
       <div className="flex flex-col gap-1">
-        <label
-          className="text-sm font-semibold text-slate-500"
-          htmlFor="priority"
-        >
-          Priority
+        <label className="text-sm font-semibold text-slate-500" htmlFor="priority">
+          {t("priority")}
         </label>
         <select
           id="priority"
           className="border border-slate-300 rounded-lg px-3 py-2 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           value={taskData.priority}
-          onChange={(e) =>
-            setTaskData({ ...taskData, priority: e.target.value })
-          }
+          onChange={(e) => setTaskData({ ...taskData, priority: e.target.value })}
         >
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
+          <option value="High">{t("high")}</option>
+          <option value="Medium">{t("medium")}</option>
+          <option value="Low">{t("low")}</option>
         </select>
       </div>
 
@@ -171,14 +154,14 @@ export default function EditItem({ taskId, onClose, onTaskUpdated }) {
               : "bg-blue-600 hover:bg-blue-700 text-white"
           }`}
         >
-          {loading ? "Saving..." : "Update Task"}
+          {loading ? t("saving") : t("updateTask")}
         </button>
         <button
           type="button"
           onClick={onClose}
           className="w-full font-semibold py-2.5 rounded-lg bg-gray-400 text-white"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>

@@ -14,23 +14,18 @@ import {
 import { db } from "../../firebaseconfig"; 
 import { collection, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
-
-// const taskCompletionData = [
-//   { month: "Jan", completed: 30, pending: 20 },
-//   { month: "Feb", completed: 45, pending: 15 },
-//   { month: "Mar", completed: 50, pending: 10 },
-//   { month: "Apr", completed: 70, pending: 5 },
-//   { month: "May", completed: 60, pending: 20 },
-// ];
+import { useTranslation } from "react-i18next";
 
 export default function Dashboard() {
-  const [tasks , setTasks] = useState([]);
-  const [stats , setStats] = useState({
+  const [tasks, setTasks] = useState([]);
+  const [stats, setStats] = useState({
     completed: 0,
     pending: 0,
     dueToday: 0,
   });
   const [chartData, setChartData] = useState([]);
+  const { t } = useTranslation();
+
   useEffect(() => {
     const fetchTasks = async () => {
       const snapshot = await getDocs(collection(db, "tasks"));
@@ -40,7 +35,7 @@ export default function Dashboard() {
       }));
       setTasks(tasksData);
 
-      // 🔹 Process stats
+      // 🔹 Stats
       const today = new Date().toISOString().split("T")[0];
       const completed = tasksData.filter((t) => t.status === "completed").length;
       const pending = tasksData.filter((t) => t.status !== "completed").length;
@@ -50,7 +45,7 @@ export default function Dashboard() {
 
       setStats({ completed, pending, dueToday });
 
-      // 🔹 Build chart data by month
+      // 🔹 Chart Data
       const grouped = {};
       tasksData.forEach((t) => {
         const month = new Date(t.dueDate || new Date()).toLocaleString("default", {
@@ -69,18 +64,19 @@ export default function Dashboard() {
 
     fetchTasks();
   }, []);
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-      <p className="text-gray-600">Overview of your tasks and progress</p>
+      <h1 className="text-2xl font-bold text-gray-800">{t("dashboard")}</h1>
+      <p className="text-gray-600">{t("overview")}</p>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="rounded-2xl shadow p-4 bg-white flex items-center gap-4">
           <CheckSquare className="text-blue-500" size={30} />
           <CardContent>
-            <h2 className="text-lg font-semibold text-gray-800">Completed</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{t("completed")}</h2>
             <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
           </CardContent>
         </Card>
@@ -88,7 +84,7 @@ export default function Dashboard() {
         <Card className="rounded-2xl shadow p-4 bg-white flex items-center gap-4">
           <ListTodo className="text-yellow-500" size={30} />
           <CardContent>
-            <h2 className="text-lg font-semibold text-gray-800">Pending</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{t("pending")}</h2>
             <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
           </CardContent>
         </Card>
@@ -96,7 +92,7 @@ export default function Dashboard() {
         <Card className="rounded-2xl shadow p-4 bg-white flex items-center gap-4">
           <Calendar className="text-green-500" size={30} />
           <CardContent>
-            <h2 className="text-lg font-semibold text-gray-800">Due Today</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{t("dueToday")}</h2>
             <p className="text-2xl font-bold text-gray-900">{stats.dueToday}</p>
           </CardContent>
         </Card>
@@ -108,7 +104,7 @@ export default function Dashboard() {
         <Card className="rounded-2xl shadow p-4 bg-white">
           <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <BarChart2 className="text-blue-500" size={20} />
-            Task Completion Trend
+            {t("taskCompletionTrend")}
           </h2>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={chartData}>
@@ -126,7 +122,7 @@ export default function Dashboard() {
         <Card className="rounded-2xl shadow p-4 bg-white">
           <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <BarChart2 className="text-green-500" size={20} />
-            Monthly Tasks
+            {t("monthlyTasks")}
           </h2>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={chartData}>
