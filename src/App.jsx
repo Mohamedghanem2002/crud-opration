@@ -70,14 +70,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/*  <Route
+          <Route
             path="settings"
             element={
               <ProtectedRoute>
                 <Settings />
               </ProtectedRoute>
             }
-          /> */}
+          />
         </Route>
         <Route path="/profile/:userId" element={<PublicProfile />} />
 
