@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { db } from "../../firebaseconfig"; // adjust path if needed
+import { db } from "../../firebaseconfig";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 export default function EditItem({ taskId, onClose, onTaskUpdated }) {

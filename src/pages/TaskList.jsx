@@ -2,13 +2,12 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import {
   collection,
-  getDocs,
   deleteDoc,
   doc,
   onSnapshot,
-  updateDoc,   // ✅ Add this
+  updateDoc,
 } from "firebase/firestore";
-import { db } from "../../firebaseconfig"; // adjust path
+import { db } from "../../firebaseconfig";
 import EditItem from "./EditItem";
 
 export default function TaskList() {
@@ -16,7 +15,7 @@ export default function TaskList() {
   const [loading, setLoading] = useState(true);
   const [editingTaskId, setEditingTaskId] = useState(null);
 
-  // 🔹 Fetch tasks from Firestore (real-time listener)
+  // 🔹 Fetch tasks (real-time)
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, "tasks"),
@@ -35,10 +34,10 @@ export default function TaskList() {
       }
     );
 
-    return () => unsubscribe(); // cleanup listener on unmount
+    return () => unsubscribe();
   }, []);
 
-  // 🔹 Handle delete
+  // 🔹 Delete
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this task?")) return;
 
@@ -51,11 +50,11 @@ export default function TaskList() {
     }
   };
 
-  // 🔹 Handle mark as completed
+  // 🔹 Complete
   const handleComplete = async (id) => {
     try {
       const taskRef = doc(db, "tasks", id);
-      await updateDoc(taskRef, { status: "completed" }); // ✅ add status field
+      await updateDoc(taskRef, { status: "completed" });
       toast.success("Task marked as completed!");
     } catch (error) {
       console.error(error);
@@ -63,7 +62,7 @@ export default function TaskList() {
     }
   };
 
-  // 🔹 Update list after editing
+  // 🔹 Update after edit
   const handleTaskUpdated = (updatedTask) => {
     setTasks((prev) =>
       prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
@@ -71,69 +70,83 @@ export default function TaskList() {
   };
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 px-3 sm:px-6 lg:px-10">
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-center text-slate-500">Loading...</p>
       ) : tasks.length === 0 ? (
-        <p>No tasks found</p>
+        <p className="text-center text-slate-500">No tasks found</p>
       ) : (
-        <ul className="space-y-3">
-          {tasks.map((task) => (
-            <li
-              key={task.id}
-              className={`border rounded p-3 flex justify-between items-center ${
-                task.status === "completed" ? "bg-green-100" : ""
-              }`}
-            >
-              <div>
-                <h3 className="font-bold">
-                  {task.title}{" "}
-                  {task.status === "completed" && (
-                    <span className="text-green-600 text-sm">(Completed)</span>
+        <div className="overflow-x-auto">
+          <ul className="space-y-4">
+            {tasks.map((task) => (
+              <li
+                key={task.id}
+                className={`border rounded-lg p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 sm:gap-6 transition 
+                  ${
+                    task.status === "completed"
+                      ? "bg-green-100 border-green-300"
+                      : "bg-white"
+                  }`}
+              >
+                {/* Task Info */}
+                <div className="flex-1">
+                  <h3 className="font-bold text-base sm:text-lg text-slate-800">
+                    {task.title}{" "}
+                    {task.status === "completed" && (
+                      <span className="text-green-600 text-sm font-normal">
+                        (Completed)
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-slate-600 text-sm sm:text-base">
+                    {task.description}
+                  </p>
+                  <small className="block text-slate-500 mt-1 text-xs sm:text-sm">
+                    Due: {task.dueDate?.split("T")[0] || "No deadline"} | Priority:{" "}
+                    {task.priority}
+                  </small>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-2 justify-end">
+                  {task.status !== "completed" && (
+                    <button
+                      onClick={() => handleComplete(task.id)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-sm sm:text-base"
+                    >
+                      Complete
+                    </button>
                   )}
-                </h3>
-                <p>{task.description}</p>
-                <small>
-                  Due: {task.dueDate?.split("T")[0] || "No deadline"} | Priority:{" "}
-                  {task.priority}
-                </small>
-              </div>
-              <div className="flex gap-2">
-                {task.status !== "completed" && (
                   <button
-                    onClick={() => handleComplete(task.id)}
-                    className="bg-green-600 text-white px-3 py-1 rounded"
+                    onClick={() => setEditingTaskId(task.id)}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded text-sm sm:text-base"
                   >
-                    Complete
+                    Edit
                   </button>
-                )}
-                <button
-                  onClick={() => setEditingTaskId(task.id)}
-                  className="bg-yellow-500 text-white px-3 py-1 rounded"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(task.id)}
-                  className="bg-red-600 text-white px-3 py-1 rounded"
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+                  <button
+                    onClick={() => handleDelete(task.id)}
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-sm sm:text-base"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
-      {/* 🔹 Show Edit form when editingTaskId is set */}
+      {/* Edit Form */}
       {editingTaskId && (
-        <div className="mt-6 border rounded p-4 bg-slate-50">
-          <h2 className="font-bold text-lg mb-3">Edit Task</h2>
-          <EditItem
-            taskId={editingTaskId}
-            onClose={() => setEditingTaskId(null)}
-            onTaskUpdated={handleTaskUpdated}
-          />
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-3">
+          <div className="bg-white rounded-lg p-6 w-[95%] sm:w-[90%] md:w-[80%] lg:w-[60%] xl:w-[40%] shadow-lg max-h-[90vh] overflow-y-auto">
+            <h2 className="font-bold text-lg mb-3 text-slate-700">Edit Task</h2>
+            <EditItem
+              taskId={editingTaskId}
+              onClose={() => setEditingTaskId(null)}
+              onTaskUpdated={handleTaskUpdated}
+            />
+          </div>
         </div>
       )}
     </div>
