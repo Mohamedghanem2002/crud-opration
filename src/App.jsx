@@ -10,6 +10,7 @@ import EditItem from "./pages/EditItem";
 import Profile from "./pages/Profile";
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicProfile from "./pages/PublicProfile";
 
 function App() {
   return (
@@ -58,6 +59,7 @@ function App() {
             }
           />
         </Route>
+        <Route path="/profile/:userId" element={<PublicProfile />} />
 
         <Route path="/auth/:type" element={<Auth />} />
       </Routes>
