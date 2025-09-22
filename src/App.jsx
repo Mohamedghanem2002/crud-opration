@@ -1,6 +1,7 @@
 // App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import Projects from "./pages/Projects";
 // import Tasks from "./pages/Tasks";
 import TaskList from "./pages/TaskList";
 import Home from "./pages/Home";
@@ -11,6 +12,7 @@ import Profile from "./pages/Profile";
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicProfile from "./pages/PublicProfile";
+import ProjectDetails from "./pages/ProjectDetails";
 
 function App() {
   return (
@@ -26,6 +28,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="projects"
+            element={
+              <ProtectedRoute>
+                <Projects />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/projects/:id" element={<ProjectDetails />} />
+
           <Route
             path="Tasks"
             element={
