@@ -2,7 +2,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
-// import Tasks from "./pages/Tasks";
 import TaskList from "./pages/TaskList";
 import Home from "./pages/Home";
 import Auth from "./pages/AuthPage";
@@ -13,10 +12,14 @@ import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicProfile from "./pages/PublicProfile";
 import ProjectDetails from "./pages/ProjectDetails";
+<<<<<<< HEAD
 import Settings  from "./pages/Settings";
 
+=======
+import Settings from "./pages/Settings";
+>>>>>>> f8edead6733678c7e56f946d13eaa4198cf222c9
 function App() {
-  
+
   return (
     <BrowserRouter>
       <Toaster position="top-right" reverseOrder={false} />
@@ -38,7 +41,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/projects/:id" element={<ProjectDetails />} />
 
           <Route
             path="Tasks"

@@ -1,89 +1,85 @@
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AddMemberModal from "../components/AddMember";
+import { useSelector, useDispatch } from "react-redux";
+import { addInvitationFirebase, upsertProject } from "../redux/projectsSlice";
+import { auth, db } from "../../firebaseconfig";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
+
+import toast from "react-hot-toast";
 
 export default function ProjectDetails() {
   const { id } = useParams();
-  const [project, setProject] = useState(null);
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    const sampleProjects = [
-      {
-        id: 1,
-        name: "Website Redesign",
-        description: "Complete overhaul of company website with new design system",
-        status: "Active",
-        progress: 65,
-        members: [],
-        invitations: [
-          { id: 1, name: "Emily Brown", email: "emily@example.com", role: "Viewer" },
-        ],
-      },
-    ];
+  const projects = useSelector((state) => state.projects.projects);
+  const project = projects.find((p) => p.id.toString() === id);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    const selected = sampleProjects.find((p) => p.id === parseInt(id));
-    setProject(selected);
-  }, [id]);
-
-  const [teamMembers, setTeamMembers] = useState([
-    {
-      id: 1,
-      name: "John Smith",
-      email: "john@example.com",
-      role: "Admin",
-      projects: 8,
-      status: "Active",
-    },
-  ]);
+  const userData = JSON.parse(localStorage.getItem("user"));
+  const currentUserEmail = userData?.email || "";
 
   const [showForm, setShowForm] = useState(false);
-  const [editingMember, setEditingMember] = useState(null);
   const [newMember, setNewMember] = useState({
-    name: "",
-    email: "",
+    inviteeEmail: "",
+    inviterEmail: currentUserEmail,
+    inviteeName: "",
     role: "",
-    projects: "",
-    status: "Active",
+    projectId: project ? project.id : "",
+    projectName: project ? project.name : "",
+    inviteStatus: "pending",
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewMember({ ...newMember, [name]: value });
-  };
+  const handleChange = (e) =>
+    setNewMember({ ...newMember, [e.target.name]: e.target.value });
 
-  // Add member as invitation, not directly to team
   const handleAdd = () => {
-    const newInvitation = {
-      ...newMember,
-      id: Date.now(),
-      role: newMember.role || "Viewer",
+    if (!project || !auth.currentUser) return;
+
+    const invitationData = {
+      inviteeEmail: newMember.inviteeEmail,
+      inviterEmail: currentUserEmail,
+      inviteeName: newMember.inviteeName,
+      role: newMember.role,
+      projectId: project.id,
+      projectName: project.name,
+      inviteStatus: "pending",
     };
 
-    setProject((prev) => ({
-      ...prev,
-      invitations: [...(prev?.invitations || []), newInvitation],
-    }));
+    addInvitationFirebase(invitationData, dispatch);
 
-    setNewMember({
-      name: "",
-      email: "",
-      role: "",
-      projects: "",
-      status: "Active",
-    });
+    toast.success("Invitation Sent Successfully!");
     setShowForm(false);
   };
 
-  const handleEdit = (member) => {
-    setEditingMember(member);
-    setNewMember(member);
-    setShowForm(true);
-  };
+  const handleDelete = async () => {
+    if (!selectedMember) return;
 
-  const handleDelete = (id) => {
-    setTeamMembers(teamMembers.filter((m) => m.id !== id));
-  };
+    try {
+      const projectRef = doc(db, "projects", project.id);
 
+      const updatedMembers = project.members.filter(
+        (m) => m.userId !== selectedMember.userId
+      );
+
+      await updateDoc(projectRef, { members: updatedMembers });
+
+      const updatedSnap = await getDoc(projectRef);
+      if (updatedSnap.exists()) {
+        dispatch(upsertProject({ id: project.id, ...updatedSnap.data() }));
+      }
+
+      toast.success("Member removed successfully!");
+    } catch (err) {
+      console.error("Error removing member:", err);
+      toast.error("Failed to remove member");
+    } finally {
+      setSelectedMember(null);
+      setShowDeleteModal(false);
+    }
+  };
 
   if (!project) return <p>Loading...</p>;
 
@@ -94,22 +90,23 @@ export default function ProjectDetails() {
       <p>Status: {project.status}</p>
       <p>Progress: {project.progress}%</p>
 
-      {/* Members avatars */}
+      {/* Team Members Avatars */}
       <div>
         <h2 className="text-lg font-semibold">Members</h2>
         <div className="flex -space-x-2 mt-2">
-          {teamMembers.map((m) => (
+          {project.members?.map((m, index) => (
             <span
-              key={m.id}
+              key={m.userId || index}
               className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-bold border border-white"
+              title={m.name || m.email}
             >
-              {m.name.charAt(0)}
+              {m.name?.charAt(0) || m.email?.charAt(0) || "?"}
             </span>
           ))}
         </div>
       </div>
 
-      {/* Team Members table */}
+      {/* Team Members Table */}
       <div className="bg-white rounded-2xl shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">Team Members</h2>
@@ -120,46 +117,30 @@ export default function ProjectDetails() {
             + Add Member
           </button>
         </div>
-
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="text-gray-600 text-sm border-b">
               <th className="p-3">Member</th>
               <th className="p-3">Role</th>
-              <th className="p-3">Projects</th>
               <th className="p-3">Status</th>
               <th className="p-3">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {teamMembers.map((member) => (
-              <tr key={member.id} className="border-b hover:bg-gray-50">
-                <td className="p-3">
-                  <div>
-                    <p className="font-medium text-gray-800">{member.name}</p>
-                    <p className="text-sm text-gray-500">{member.email}</p>
-                  </div>
-                </td>
-                <td className="p-3">
-                  <span className="px-3 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
-                    {member.role}
-                  </span>
-                </td>
-                <td className="p-3 text-gray-600">{member.projects} Projects</td>
-                <td className="p-3">
-                  <span className="px-3 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                    {member.status}
-                  </span>
-                </td>
+            {project.members?.map((member, index) => (
+              <tr
+                key={member.userId || index}
+                className="border-b hover:bg-gray-50"
+              >
+                <td className="p-3">{member.name || member.email}</td>
+                <td className="p-3">{member.role || "Viewer"}</td>
+                <td className="p-3">{member.status}</td>
                 <td className="p-3 space-x-3 text-sm">
                   <button
-                    onClick={() => handleEdit(member)}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(member.id)}
+                    onClick={() => {
+                      setSelectedMember(member);
+                      setShowDeleteModal(true);
+                    }}
                     className="text-red-600 hover:underline"
                   >
                     Remove
@@ -175,13 +156,16 @@ export default function ProjectDetails() {
         <AddMemberModal
           newMember={newMember}
           onChange={handleChange}
-          onClose={() => {
-            setShowForm(false);
-            setEditingMember(null);
-          }}
+          onClose={() => setShowForm(false)}
           onSave={handleAdd}
         />
       )}
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        member={selectedMember}
+      />
     </div>
   );
 }

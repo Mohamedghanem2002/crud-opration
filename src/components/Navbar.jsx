@@ -35,7 +35,7 @@ export default function Navbar() {
   const menuItems = [
     { id: 1, name: t("dashboard"), icon: <LayoutDashboard size={20} />, path: "/dashboard" },
     { id: 2, name: t("tasks.title"), icon: <CheckSquare size={20} />, path: "/tasks" },
-    // { id: 3, name: t("projects"), icon: <Folder size={20} />, path: "/projects" },
+    { id: 3, name: t("projects"), icon: <Folder size={20} />, path: "/projects" },
     { id: 4, name: t("settings"), icon: <Settings size={20} />, path: "/settings" },
     { id: 5, name: t("profile"), icon: <User size={20} />, path: "/profile" },
   ];
