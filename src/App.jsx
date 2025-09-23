@@ -12,8 +12,9 @@ import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicProfile from "./pages/PublicProfile";
 import ProjectDetails from "./pages/ProjectDetails";
-
+import Settings from "./pages/Settings";
 function App() {
+
   return (
     <BrowserRouter>
       <Toaster position="top-right" reverseOrder={false} />
@@ -68,14 +69,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-        <Route
-          path="/projects/:id"
-          element={
-            <ProtectedRoute>
-              <ProjectDetails />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
         </Route>
         <Route path="/profile/:userId" element={<PublicProfile />} />
 

@@ -3,9 +3,11 @@ import { db } from "../../firebaseconfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 export default function AddItem() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [taskData, setTaskData] = useState({
     title: "",
@@ -20,7 +22,7 @@ export default function AddItem() {
     e.preventDefault();
 
     if (!taskData.title || !taskData.description) {
-      toast.error("Title and Description are required!");
+      toast.error(`${t("title")} & ${t("description")} required!`);
       return;
     }
 
@@ -37,18 +39,11 @@ export default function AddItem() {
         createdAt: serverTimestamp(),
       });
 
-      toast.success("Task created successfully!");
-
-      setTaskData({
-        title: "",
-        description: "",
-        dueDate: "",
-        priority: "Low",
-      });
+      toast.success(t("success"));
       navigate("/Tasks");
     } catch (error) {
       console.error("Error creating task:", error.response || error);
-      toast.error("Failed to create task!");
+      toast.error(t("error"));
     } finally {
       setLoading(false);
     }
@@ -63,12 +58,12 @@ export default function AddItem() {
         {/* Title */}
         <div className="flex flex-col gap-1">
           <label className="text-sm font-semibold text-slate-500" htmlFor="title">
-            Title
+            {t("title")}
           </label>
           <input
             type="text"
             id="title"
-            placeholder="Enter task title"
+            placeholder={t("title")}
             className="border border-slate-300 rounded-lg px-3 py-2 text-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none w-full"
             value={taskData.title}
             onChange={(e) => setTaskData({ ...taskData, title: e.target.value })}
@@ -77,16 +72,13 @@ export default function AddItem() {
 
         {/* Description */}
         <div className="flex flex-col gap-1">
-          <label
-            className="text-sm font-semibold text-slate-500"
-            htmlFor="description"
-          >
-            Description
+          <label className="text-sm font-semibold text-slate-500" htmlFor="description">
+            {t("description")}
           </label>
           <textarea
             id="description"
             rows={4}
-            placeholder="Write task description..."
+            placeholder={t("description")}
             className="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none w-full"
             value={taskData.description}
             onChange={(e) =>
@@ -98,11 +90,8 @@ export default function AddItem() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {/* Due Date */}
           <div className="flex flex-col gap-1">
-            <label
-              className="text-sm font-semibold text-slate-500"
-              htmlFor="dueDate"
-            >
-              Due Date (optional)
+            <label className="text-sm font-semibold text-slate-500" htmlFor="dueDate">
+              {t("dueDate")}
             </label>
             <input
               type="date"
@@ -117,11 +106,8 @@ export default function AddItem() {
 
           {/* Priority */}
           <div className="flex flex-col gap-1">
-            <label
-              className="text-sm font-semibold text-slate-500"
-              htmlFor="priority"
-            >
-              Priority
+            <label className="text-sm font-semibold text-slate-500" htmlFor="priority">
+              {t("priority")}
             </label>
             <select
               id="priority"
@@ -131,9 +117,9 @@ export default function AddItem() {
                 setTaskData({ ...taskData, priority: e.target.value })
               }
             >
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
+              <option value="High">{t("high")}</option>
+          <option value="Medium">{t("medium")}</option>
+          <option value="Low">{t("low")}</option>
             </select>
           </div>
         </div>
@@ -149,7 +135,7 @@ export default function AddItem() {
             }`}
           disabled={!taskData.title || !taskData.description || loading}
         >
-          {loading ? "Saving..." : "Add Task"}
+          {loading ? t("saving") : t("addTask")}
         </button>
       </form>
     </div>

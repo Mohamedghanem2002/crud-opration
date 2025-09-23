@@ -2,15 +2,17 @@ import { useState } from "react";
 import { auth } from "./../../firebaseconfig";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { Link } from "react-router-dom";
-import SpinnerOverlay from "./../components/SpinnerOverlay";
+import SpinnerOverlay from "./SpinnerOverlay";
 import toast from "react-hot-toast";
 import { CheckSquare } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
@@ -18,7 +20,7 @@ function ForgotPassword() {
     setSuccess("");
 
     if (!email) {
-      setError("Please enter your email.");
+      setError(t("auth.emailRequired"));
       return;
     }
 
@@ -26,16 +28,16 @@ function ForgotPassword() {
 
     try {
       await sendPasswordResetEmail(auth, email);
-      setSuccess("Password reset link sent! Check your email.");
-      toast.success("Reset link sent successfully!");
+      setSuccess(t("auth.resetLinkSent"));
+      toast.success(t("auth.resetLinkSent"));
     } catch (err) {
       console.log("Firebase Error Code:", err.code);
       if (err.code === "auth/user-not-found") {
-        setError("No user found with this email.");
+        setError(t("auth.userNotFound"));
       } else if (err.code === "auth/invalid-email") {
-        setError("Invalid email address.");
+        setError(t("auth.invalidEmail"));
       } else {
-        setError("Failed to send reset email. Please try again later.");
+        setError(t("auth.resetPasswordError"));
       }
     }
 
@@ -51,17 +53,19 @@ function ForgotPassword() {
           <div className="flex items-center justify-center gap-1 mb-6">
             <CheckSquare className="text-blue-950" size={20} />
             <h1 className="text-xl font-extrabold tracking-wide text-blue-950">
-              Task Manager
+              {t("appName")}
             </h1>
           </div>
         </div>
         <h2 className="text-2xl font-semibold text-center mb-4">
-          Forgot Password
+          {t("auth.forgotPassword")}
         </h2>
 
         <form onSubmit={handleResetPassword} className="flex flex-col gap-3">
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
+            <label className="block text-sm font-medium mb-1">
+              {t("auth.forgotPasswordEmail")}
+            </label>
             <input
               type="email"
               className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -87,13 +91,13 @@ function ForgotPassword() {
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-50"
             disabled={loading}
           >
-            {loading ? "Sending..." : "Send Reset Link"}
+            {loading ? t("common.sending") : t("auth.forgotPasswordSubmit")}
           </button>
 
           <p className="mt-3 text-center text-sm">
-            Remembered your password?{" "}
+            {t("auth.rememberPassword")}
             <Link to="/auth/sign-in" className="text-blue-600 hover:underline">
-              Sign In
+              {t("auth.signIn")}
             </Link>
           </p>
         </form>

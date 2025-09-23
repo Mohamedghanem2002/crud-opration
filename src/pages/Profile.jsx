@@ -5,6 +5,7 @@ import { auth } from "../../firebaseconfig";
 import { useState } from "react";
 import { useProfileData } from "../hooks/useUserProfile";
 import ShareModel from "../components/profile/ShareModel";
+import { useTranslation } from "react-i18next";
 
 export default function Profile() {
   const {
@@ -19,6 +20,7 @@ export default function Profile() {
   } = useProfileData();
 
   const [showShare, setShowShare] = useState(false);
+  const { t } = useTranslation();
 
   if (loading || saving) return <LoadingOverlay />;
 
@@ -43,13 +45,13 @@ export default function Profile() {
                 onClick={handleSave}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
-                Save
+                {t("save")}
               </button>
               <button
                 onClick={() => setEditMode(false)}
                 className="px-4 py-2 border rounded hover:bg-gray-100"
               >
-                Cancel
+                {t("cancel")}
               </button>
             </>
           ) : (
@@ -61,13 +63,13 @@ export default function Profile() {
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
-                Edit Profile
+                {t("editProfile")}
               </button>
               <button
                 onClick={() => setShowShare(true)}
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               >
-                Share My Profile
+                {t("shareProfile")}
               </button>
             </>
           )}
