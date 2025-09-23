@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicProfile from "./pages/PublicProfile";
 import ProjectDetails from "./pages/ProjectDetails";
 import Settings from "./pages/Settings";
+
 function App() {
 
   return (
