@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { db } from "../../firebaseconfig";
 import { collection, getDocs } from "firebase/firestore";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 
 // const taskCompletionData = [
@@ -25,6 +26,7 @@ import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
+   const { t } = useTranslation();
   const [stats, setStats] = useState({
     completed: 0,
     pending: 0,
