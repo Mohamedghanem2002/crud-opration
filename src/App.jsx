@@ -2,7 +2,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
-// import Tasks from "./pages/Tasks";
 import TaskList from "./pages/TaskList";
 import Home from "./pages/Home";
 import Auth from "./pages/AuthPage";
@@ -36,7 +35,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/projects/:id" element={<ProjectDetails />} />
 
           <Route
             path="Tasks"
@@ -70,6 +68,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+        <Route
+          path="/projects/:id"
+          element={
+            <ProtectedRoute>
+              <ProjectDetails />
+            </ProtectedRoute>
+          }
+        />
         </Route>
         <Route path="/profile/:userId" element={<PublicProfile />} />
 

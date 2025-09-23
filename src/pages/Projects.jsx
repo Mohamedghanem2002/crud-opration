@@ -1,57 +1,34 @@
-import { useState } from "react";
-import AddProjectModal from "../components/AddProject";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import AddProjectModal from "../components/AddProject";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  setProjects,
+  upsertProject,
+  removeInvitationFirebase,
+} from "../redux/projectsSlice";
+
+import { auth, db } from "./../../firebaseconfig";
+import {
+  collection,
+  getDocs,
+  getDoc,
+  doc,
+  updateDoc,
+  addDoc,
+} from "firebase/firestore";
+import formatDate from "../services/formatDate";
+import toast from "react-hot-toast";
+import useFetchInvitations from "../hooks/useFetchInvitations";
+import useProjectsCount from "../hooks/useProjectsCount";
 
 export default function Projects() {
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      name: "Website Redesign",
-      description: "Complete overhaul of company website with new design system",
-      status: "Active",
-      progress: 65,
-      members: ["JS", "RK", "AM"],
-      updated: "2h ago",
-    },
-    {
-      id: 2,
-      name: "Mobile App Development",
-      description: "iOS and Android app development for client project",
-      status: "Completed",
-      progress: 100,
-      members: ["NK", "SH"],
-      updated: "1d ago",
-    },
-    {
-      id: 3,
-      name: "Marketing Campaign",
-      description: "Q1 2025 Marketing Strategy and Implementation",
-      status: "Pending",
-      progress: 0,
-      members: ["RK", "AM", "SH"],
-      updated: "2d ago",
-    },
-  ]);
+  useProjectsCount();
+  const dispatch = useDispatch();
+  const projects = useSelector((state) => state.projects.projects);
+  const invitations = useSelector((state) => state.projects.invitations);
 
-  const [invitations, setInvitations] = useState([
-    { id: 1, projectId: 1, name: "Emily Brown", email: "emily@example.com", role: "Viewer" },
-    { id: 2, projectId: 2, name: "David Wilson", email: "david@example.com", role: "Editor" },
-  ]);
-
-  const handleAcceptInvitation = (inv) => {
-    setProjects((prevProjects) =>
-      prevProjects.map((p) =>
-        p.id === inv.projectId
-          ? { ...p, members: [...p.members, inv.name] }
-          : p
-      )
-    );
-    setInvitations(invitations.filter((i) => i.id !== inv.id));
-  };
-
-  const handleRejectInvitation = (id) => {
-    setInvitations(invitations.filter((i) => i.id !== id));
-  };
+  useFetchInvitations();
 
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [newProject, setNewProject] = useState({
@@ -59,29 +36,156 @@ export default function Projects() {
     description: "",
     status: "Active",
     progress: 0,
-    members: [],
-    updated: "Just now",
+    updated: new Date().toISOString(),
   });
+
+  // Fetch projects from Firestore
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) return;
+
+        const querySnapshot = await getDocs(collection(db, "projects"));
+        const projectsList = querySnapshot.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            ...data,
+            createdAt:
+              data.createdAt && typeof data.createdAt.toDate === "function"
+                ? data.createdAt.toDate().getTime()
+                : data.createdAt || Date.now(), // fallback لو مش موجود
+            updated:
+              data.updated && typeof data.updated.toDate === "function"
+                ? data.updated.toDate().getTime()
+                : data.updated || Date.now(),
+          };
+        });
+
+        dispatch(setProjects({ projectsList, currentUserId: currentUser.uid }));
+      } catch (err) {
+        toast.error("Error fetching projects");
+        console.error(err);
+      }
+    };
+
+    fetchProjects();
+  }, [dispatch]);
 
   const handleProjectChange = (e) => {
     const { name, value } = e.target;
-    setNewProject({ ...newProject, [name]: value });
+    setNewProject((p) => ({ ...p, [name]: value }));
   };
 
-  const handleAddProject = () => {
-    setProjects([
-      ...projects,
-      { ...newProject, id: projects.length + 1 }
-    ]);
-    setNewProject({
-      name: "",
-      description: "",
-      status: "Active",
-      progress: 0,
-      members: [],
-      updated: "Just now",
-    });
-    setShowProjectForm(false);
+  const handleAddProject = async (projectData) => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return toast.error("User not logged in");
+
+      // Add project to Firestore
+      const projectRef = await addDoc(collection(db, "projects"), {
+        ...projectData,
+        createdAt: new Date().toISOString(),
+        updated: new Date().toISOString(),
+        ownerId: currentUser.uid,
+        members: [
+          {
+            userId: currentUser.uid,
+            name: currentUser.displayName || "",
+            email: currentUser.email,
+            role: "Owner",
+            status: "active",
+          },
+        ],
+      });
+
+      const projectSnap = await getDoc(projectRef);
+      const project = { id: projectRef.id, ...projectSnap.data() };
+
+      // Update Redux
+      dispatch(upsertProject(project));
+
+      // Reset form
+      setNewProject({
+        name: "",
+        description: "",
+        status: "Active",
+        progress: 0,
+        updated: new Date().toISOString(),
+      });
+      setShowProjectForm(false);
+
+      toast.success("Project added successfully 🎉");
+    } catch (err) {
+      console.error("Error adding project:", err);
+      toast.error("Error saving project");
+    }
+  };
+
+  // Accept invitation
+  const handleAcceptInvitation = async (inv) => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return toast.error("User not logged in");
+
+      const projectRef = doc(db, "projects", inv.projectId);
+      const projectSnap = await getDoc(projectRef);
+
+      if (!projectSnap.exists()) {
+        return toast.error("Project not found");
+      }
+
+      const projectData = projectSnap.data();
+      const members = Array.isArray(projectData.members)
+        ? projectData.members
+        : [];
+
+      // عضو جديد بشكل ثابت
+      const newMember = {
+        userId: currentUser.uid,
+        name:
+          inv.inviteeName ||
+          currentUser.displayName ||
+          inv.inviteeEmail?.split?.("@")?.[0] ||
+          "",
+        email: currentUser.email,
+        role: inv.role || "Viewer",
+        status: "active",
+      };
+
+      // نعمل overwrite بدون تكرار
+      const updatedMembers = [
+        ...members.filter((m) => m.userId !== newMember.userId),
+        newMember,
+      ];
+
+      await updateDoc(projectRef, { members: updatedMembers });
+      console.log("Member added successfully to firestore");
+
+      const updatedSnap = await getDoc(projectRef);
+      const updatedProject = updatedSnap.exists()
+        ? { id: updatedSnap.id, ...updatedSnap.data() }
+        : { id: projectSnap.id, ...projectData };
+
+      dispatch(upsertProject(updatedProject));
+      await removeInvitationFirebase(inv.id, dispatch);
+
+      toast.success("Invitation accepted! You joined the project 🎉");
+    } catch (err) {
+      console.error("Error in handleAcceptInvitation:", err);
+      toast.error("Failed to accept invitation");
+    }
+  };
+
+  const handleRejectInvitation = async (invId) => {
+    try {
+      await removeInvitationFirebase(invId, dispatch);
+      toast.success("Invitation rejected");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to reject invitation");
+    }
   };
 
   return (
@@ -96,6 +200,7 @@ export default function Projects() {
           + Add Project
         </button>
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
           <div
@@ -104,17 +209,19 @@ export default function Projects() {
           >
             <div className="flex justify-between items-center mb-3">
               <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold ${project.status === "Active"
-                  ? "bg-yellow-100 text-yellow-700"
-                  : project.status === "Completed"
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  project.status === "Active"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : project.status === "Completed"
                     ? "bg-green-100 text-green-700"
                     : "bg-red-100 text-red-700"
-                  }`}
+                }`}
               >
                 {project.status}
               </span>
               <span className="text-gray-400 text-sm">★</span>
             </div>
+
             <Link to={`/projects/${project.id}`}>
               <h2 className="text-lg font-semibold text-gray-800 mb-1">
                 {project.name}
@@ -125,32 +232,36 @@ export default function Projects() {
             <div className="mb-3">
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div
-                  className={`h-2.5 rounded-full ${project.status === "Completed"
-                    ? "bg-green-500"
-                    : project.status === "Active"
+                  className={`h-2.5 rounded-full ${
+                    project.status === "Completed"
+                      ? "bg-green-500"
+                      : project.status === "Active"
                       ? "bg-yellow-500"
                       : "bg-gray-400"
-                    }`}
-                  style={{ width: `${project.progress}%` }}
+                  }`}
+                  style={{ width: `${project.progress ?? 0}%` }}
                 ></div>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                {project.progress}%
+                {project.progress ?? 0}%
               </p>
             </div>
 
             <div className="flex items-center justify-between text-sm text-gray-500">
               <div className="flex -space-x-2">
-                {project.members.map((m, index) => (
+                {project.members?.map((m, index) => (
                   <span
-                    key={index}
+                    key={m.userId ?? index}
                     className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-bold border border-white"
+                    title={m.name || m.email}
                   >
-                    {m}
+                    {(m.name && m.name.charAt(0)) ||
+                      (m.email && m.email.charAt(0)) ||
+                      "?"}
                   </span>
                 ))}
               </div>
-              <span>Updated {project.updated}</span>
+              <span>Updated {formatDate(project.updated)}</span>
             </div>
           </div>
         ))}
@@ -165,7 +276,7 @@ export default function Projects() {
         />
       )}
 
-      {/* Pending Invitations Section */}
+      {/* Invitations Section */}
       <div className="bg-white rounded-2xl shadow-md p-6">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">
           Pending Invitations
@@ -177,17 +288,22 @@ export default function Projects() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="text-gray-600 text-sm border-b">
-                <th className="p-3">Name</th>
-                <th className="p-3">Email</th>
+                <th className="p-3">Project</th>
+                <th className="p-3">Invited By</th>
+                <th className="p-3">Invitee</th>
                 <th className="p-3">Role</th>
                 <th className="p-3">Actions</th>
               </tr>
             </thead>
+
             <tbody>
-              {invitations.map((inv) => (
-                <tr key={inv.id} className="border-b hover:bg-gray-50">
-                  <td className="p-3">{inv.name}</td>
-                  <td className="p-3">{inv.email}</td>
+              {invitations.map((inv, index) => (
+                <tr key={inv.id || index} className="border-b hover:bg-gray-50">
+                  <td className="p-3">{inv.projectName}</td>
+                  <td className="p-3">{inv.inviterEmail}</td>
+                  <td className="p-3">
+                    {inv.inviteeName || inv.name || ""} ({inv.inviteeEmail})
+                  </td>
                   <td className="p-3">{inv.role}</td>
                   <td className="p-3 space-x-3 text-sm">
                     <button

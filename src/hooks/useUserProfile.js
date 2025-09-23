@@ -3,6 +3,7 @@ import { auth, db } from "/firebaseconfig";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { isValidPhoneNumber } from "libphonenumber-js";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
 export function useProfileData() {
   const [userData, setUserData] = useState(null);
@@ -10,6 +11,7 @@ export function useProfileData() {
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const projects = useSelector((state) => state.projects.projects);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -34,7 +36,7 @@ export function useProfileData() {
             lastLogin: user.lastLogin,
             completedTasks: 0,
             pendingTasks: 0,
-            projectsCount: 0,
+            projectsCount: projects.length,
           });
           const newSnap = await getDoc(docRef);
           setUserData(newSnap.data());
@@ -91,6 +93,7 @@ export function useProfileData() {
         ...formData,
         phones: cleanedPhones,
         links: cleanedLinks,
+        projectsCount: projects.length,
       });
 
       setUserData({
@@ -98,6 +101,7 @@ export function useProfileData() {
         ...formData,
         phones: cleanedPhones,
         links: cleanedLinks,
+        projectsCount: projects.length,
       });
 
       setEditMode(false);
