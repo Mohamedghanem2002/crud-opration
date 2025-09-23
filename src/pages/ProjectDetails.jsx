@@ -1,27 +1,39 @@
 import { useParams } from "react-router-dom";
 import { useState } from "react";
-import AddMemberModal from "../components/AddMember";
 import { useSelector, useDispatch } from "react-redux";
 import { addInvitationFirebase, upsertProject } from "../redux/projectsSlice";
 import { auth, db } from "../../firebaseconfig";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
-import ConfirmDeleteModal from "./ConfirmDeleteModal";
-
 import toast from "react-hot-toast";
+
+// Import components
+import AddMemberModal from "../components/AddMember";
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
+import ProjectHeader from "../components/ProjectDetails/ProjectHeader";
+import TeamMembersSection from "../components/ProjectDetails/TeamMembersSection";
+import LoadingComponent from "../components/ProjectDetails/Loading";
+
+// Import utility functions
+import { getRoleIcon, getRoleColor, getStatusColor, getProgressColor } from "../components/ProjectDetails/HelperFunction";
 
 export default function ProjectDetails() {
   const { id } = useParams();
   const dispatch = useDispatch();
 
+  // Redux state
   const projects = useSelector((state) => state.projects.projects);
   const project = projects.find((p) => p.id.toString() === id);
+
+  // Local state
   const [selectedMember, setSelectedMember] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
+  // User data
   const userData = JSON.parse(localStorage.getItem("user"));
   const currentUserEmail = userData?.email || "";
 
-  const [showForm, setShowForm] = useState(false);
+  // New member form state
   const [newMember, setNewMember] = useState({
     inviteeEmail: "",
     inviterEmail: currentUserEmail,
@@ -32,8 +44,13 @@ export default function ProjectDetails() {
     inviteStatus: "pending",
   });
 
+  // Event handlers
   const handleChange = (e) =>
     setNewMember({ ...newMember, [e.target.name]: e.target.value });
+
+  const handleAddMember = () => {
+    setShowForm(true);
+  };
 
   const handleAdd = () => {
     if (!project || !auth.currentUser) return;
@@ -52,6 +69,22 @@ export default function ProjectDetails() {
 
     toast.success("Invitation Sent Successfully!");
     setShowForm(false);
+
+    // Reset form
+    setNewMember({
+      inviteeEmail: "",
+      inviterEmail: currentUserEmail,
+      inviteeName: "",
+      role: "",
+      projectId: project.id,
+      projectName: project.name,
+      inviteStatus: "pending",
+    });
+  };
+
+  const handleRemoveMember = (member) => {
+    setSelectedMember(member);
+    setShowDeleteModal(true);
   };
 
   const handleDelete = async () => {
@@ -81,88 +114,52 @@ export default function ProjectDetails() {
     }
   };
 
-  if (!project) return <p>Loading...</p>;
+  const handleCloseModals = () => {
+    setShowForm(false);
+    setShowDeleteModal(false);
+    setSelectedMember(null);
+  };
+
+  // Loading state
+  if (!project) {
+    return <LoadingComponent message="Loading project..." />;
+  }
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">{project.name}</h1>
-      <p className="text-gray-600">{project.description}</p>
-      <p>Status: {project.status}</p>
-      <p>Progress: {project.progress}%</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="px-3 py-4 sm:px-6 lg:px-8 lg:py-8 max-w-7xl mx-auto space-y-3 sm:space-y-6">
 
-      {/* Team Members Avatars */}
-      <div>
-        <h2 className="text-lg font-semibold">Members</h2>
-        <div className="flex -space-x-2 mt-2">
-          {project.members?.map((m, index) => (
-            <span
-              key={m.userId || index}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-bold border border-white"
-              title={m.name || m.email}
-            >
-              {m.name?.charAt(0) || m.email?.charAt(0) || "?"}
-            </span>
-          ))}
-        </div>
+        {/* Project Header */}
+        <ProjectHeader
+          project={project}
+          getProgressColor={getProgressColor}
+        />
+
+        {/* Team Members Section */}
+        <TeamMembersSection
+          project={project}
+          onAddMember={handleAddMember}
+          onRemoveMember={handleRemoveMember}
+          getRoleIcon={getRoleIcon}
+          getRoleColor={getRoleColor}
+          getStatusColor={getStatusColor}
+        />
+
       </div>
 
-      {/* Team Members Table */}
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Team Members</h2>
-          <button
-            onClick={() => setShowForm(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
-          >
-            + Add Member
-          </button>
-        </div>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="text-gray-600 text-sm border-b">
-              <th className="p-3">Member</th>
-              <th className="p-3">Role</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {project.members?.map((member, index) => (
-              <tr
-                key={member.userId || index}
-                className="border-b hover:bg-gray-50"
-              >
-                <td className="p-3">{member.name || member.email}</td>
-                <td className="p-3">{member.role || "Viewer"}</td>
-                <td className="p-3">{member.status}</td>
-                <td className="p-3 space-x-3 text-sm">
-                  <button
-                    onClick={() => {
-                      setSelectedMember(member);
-                      setShowDeleteModal(true);
-                    }}
-                    className="text-red-600 hover:underline"
-                  >
-                    Remove
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
+      {/* Modals */}
       {showForm && (
         <AddMemberModal
           newMember={newMember}
           onChange={handleChange}
-          onClose={() => setShowForm(false)}
+          onClose={handleCloseModals}
           onSave={handleAdd}
         />
       )}
+
       <ConfirmDeleteModal
         isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
+        onClose={handleCloseModals}
         onConfirm={handleDelete}
         member={selectedMember}
       />
