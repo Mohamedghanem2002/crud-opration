@@ -24,28 +24,28 @@ function DynamicList({
   };
 
   return (
-    <div>
-      <label className="block text-gray-600">{label}</label>
-      <div className="space-y-2">
+    <div className="p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
+      <label className="block text-gray-700 font-medium mb-2">{label}</label>
+      <div className="space-y-3">
         {items?.map((item, i) => (
-          <div key={i} className="flex gap-2">
+          <div key={i} className="flex flex-col sm:flex-row gap-3">
             {isLink ? (
               <>
                 <input
                   type="text"
                   value={item.title || ""}
                   onChange={(e) => handleChange(e.target.value, i, "title")}
-                  className="w-1/3 border rounded p-2"
+                  className="flex-1 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="Title"
                 />
                 <input
                   type="url"
                   value={item.url || ""}
                   onChange={(e) => handleChange(e.target.value, i, "url")}
-                  className={`w-2/3 border rounded p-2 ${
+                  className={`flex-1 border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none ${
                     validate && !validate(item.url) && item.url?.trim() !== ""
                       ? "border-red-500"
-                      : ""
+                      : "border-gray-300"
                   }`}
                   placeholder={placeholder}
                 />
@@ -55,10 +55,10 @@ function DynamicList({
                 type={type}
                 value={item}
                 onChange={(e) => handleChange(e.target.value, i)}
-                className={`w-full border rounded p-2 ${
+                className={`flex-1 border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none ${
                   validate && !validate(item) && item.trim() !== ""
                     ? "border-red-500"
-                    : ""
+                    : "border-gray-300"
                 }`}
                 placeholder={placeholder}
               />
@@ -66,7 +66,7 @@ function DynamicList({
             <button
               type="button"
               onClick={() => handleRemove(i)}
-              className="px-2 bg-red-500 text-white rounded hover:bg-red-600"
+              className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
             >
               <FaXmark size={14} />
             </button>
@@ -80,7 +80,7 @@ function DynamicList({
               isLink ? { title: "", url: "" } : "",
             ])
           }
-          className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white font-medium rounded-xl shadow-sm hover:bg-green-600 transition-colors duration-200"
         >
           <FaPlus size={14} /> Add {label}
         </button>

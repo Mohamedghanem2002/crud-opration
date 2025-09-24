@@ -23,15 +23,15 @@ const ProjectHeader = ({ project, getProgressColor }) => {
             <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
               Status
             </label>
-            <span className={`inline-flex px-2.5 py-1.5 rounded-md text-sm font-semibold ${project.status === "Active" || project.status === "active"
+            <span className={`inline-flex px-2.5 py-1.5 rounded-md text-sm font-semibold ${project.status === "Completed" || project.status === "completed"
                 ? "bg-green-100 text-green-800"
-                : project.status === "Completed" || project.status === "completed"
+                : project.status === "In Process"
                   ? "bg-blue-100 text-blue-800"
-                  : project.status === "pending"
+                  : project.status === "Pending" || project.status === "pending"
                     ? "bg-yellow-100 text-yellow-800"
                     : "bg-gray-100 text-gray-800"
               }`}>
-              {project.status || "Active"}
+              {project.status || "Pending"}
             </span>
           </div>
 

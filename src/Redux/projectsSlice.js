@@ -44,6 +44,11 @@ const projectsSlice = createSlice({
         state.projects.push(project);
       }
     },
+    removeProject: (state, action) => {
+      state.projects = state.projects.filter(
+        (project) => project.id !== action.payload
+      );
+    },
 
     addInvitation: (state, action) => {
       state.invitations.push(action.payload);
@@ -62,6 +67,7 @@ const projectsSlice = createSlice({
 export const {
   setProjects,
   upsertProject,
+  removeProject,
   addInvitation,
   removeInvitation,
   setInvitations,
@@ -87,15 +93,25 @@ export const addProjectFirebase = async (project, currentUser, dispatch) => {
     const docRef = await addDoc(collection(db, "projects"), projectWithMember);
     dispatch(upsertProject({ ...projectWithMember, id: docRef.id }));
 
-    toast.success("Project added successfully 🎉"); // هنا فقط
-    return true; // ترجع نجاح
+    toast.success("Project added successfully 🎉");
+    return true;
   } catch (error) {
     console.error(error);
-    toast.error("Error adding project"); // هنا فقط
-    return false; // ترجع فشل
+    toast.error("Error adding project"); 
+    return false; 
   }
 };
 
+export const selectFilteredProjects = (searchTerm) =>
+  createSelector(
+    (state) => state.projects.projects,
+    (projects) =>
+      projects.filter(
+        (p) =>
+          p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+  );
 
 export const addInvitationFirebase = async (invitation, dispatch) => {
   try {

@@ -1,43 +1,63 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ConfirmProjectDeleteModal from "./ConfirmProjectDeleteModal";
 import AddProjectModal from "../components/AddProjectModal";
-import ConfirmDeleteModal from "./ConfirmDeleteModal";
+import EditProjectInfo from "../components/EditProjectInfo";
+import formatDate from "../services/formatDate";
+import useFetchInvitations from "../hooks/useFetchInvitations";
+import useProjectsCount from "../hooks/useProjectsCount";
+import toast from "react-hot-toast";
+import { Pencil, Search, Trash2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setProjects,
   upsertProject,
   removeInvitationFirebase,
+  removeProject,
 } from "../redux/projectsSlice";
-
-import { auth, db } from "./../../firebaseconfig";
 import {
   collection,
   getDocs,
   getDoc,
+  deleteDoc,
   doc,
   updateDoc,
   addDoc,
 } from "firebase/firestore";
-import formatDate from "../services/formatDate";
-import toast from "react-hot-toast";
-import useFetchInvitations from "../hooks/useFetchInvitations";
-import useProjectsCount from "../hooks/useProjectsCount";
+import { auth, db } from "../../firebaseconfig";
 
 export default function Projects() {
-  useProjectsCount();
   const dispatch = useDispatch();
+  useProjectsCount();
+  useFetchInvitations();
+
   const projects = useSelector((state) => state.projects.projects);
   const invitations = useSelector((state) => state.projects.invitations);
 
-  useFetchInvitations();
+  /* Search Projects */
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
+  const filteredProjects = projects.filter((p) => {
+    const matchesSearch =
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchTerm.toLowerCase());
 
+    const matchesStatus =
+      statusFilter === "All" ||
+      (p.status || "").toLowerCase() === statusFilter.toLowerCase();
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [editProject, setEditProject] = useState(null);
   const [newProject, setNewProject] = useState({
     name: "",
     description: "",
-    status: "Active",
+    status: "Pending",
     progress: 0,
     updated: new Date().toISOString(),
   });
@@ -81,6 +101,7 @@ export default function Projects() {
     setNewProject((p) => ({ ...p, [name]: value }));
   };
 
+  // Add Projects
   const handleAddProject = async (projectData) => {
     try {
       const currentUser = auth.currentUser;
@@ -132,17 +153,41 @@ export default function Projects() {
     setShowEditForm(true);
   };
 
+  const handleDeleteClick = (project) => {
+    setSelectedProject(project);
+    setIsDeleteOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteDoc(doc(db, "projects", selectedProject.id));
+      toast.success("Project deleted successfully 🗑️");
+      dispatch(removeProject(selectedProject.id));
+    } catch (err) {
+      console.error("Error deleting project:", err);
+      toast.error("Failed to delete project");
+    } finally {
+      setIsDeleteOpen(false);
+      setSelectedProject(null);
+    }
+  };
+
+  // Save Project Edit
   const handleSaveEdit = async () => {
     if (!editProject) return;
     try {
       const projectRef = doc(db, "projects", editProject.id);
+
       const updatedData = {
+        name: editProject.name?.trim() || "Untitled Project", // ✅ تعديل الاسم
+        description: editProject.description?.trim() || "", // ✅ تعديل الوصف
         status: editProject.status,
         progress: Number(editProject.progress),
         updated: new Date().toISOString(),
       };
 
       await updateDoc(projectRef, updatedData);
+
       const updatedSnap = await getDoc(projectRef);
       const updatedProject = { id: updatedSnap.id, ...updatedSnap.data() };
 
@@ -173,7 +218,6 @@ export default function Projects() {
         ? projectData.members
         : [];
 
-      // عضو جديد
       const newMember = {
         userId: currentUser.uid,
         name:
@@ -209,6 +253,7 @@ export default function Projects() {
     }
   };
 
+  //Reject Invetation
   const handleRejectInvitation = async (invId) => {
     try {
       await removeInvitationFirebase(invId, dispatch);
@@ -221,43 +266,82 @@ export default function Projects() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6 sm:space-y-10 min-h-screen">
-      {/* Projects Section */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-        <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
-          Projects
-        </h2>
-        <button
-          onClick={() => setShowProjectForm(true)}
-          className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-sm sm:text-base"
-        >
-          + Add Project
-        </button>
+      <div className="flex flex-col gap-4 mb-6">
+        {/* Title */}
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+            Projects
+          </h2>
+          {/* Search + Filter */}
+          <div className="flex flex-col justify-center sm:flex-row gap-2 w-full sm:w-auto items-start sm:items-center">
+            <div className="relative w-full sm:w-64">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <Search size={16} />
+              </span>
+              <input
+                type="text"
+                placeholder="Search projects..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 shadow-sm text-sm sm:text-base transition"
+              />
+            </div>
+
+            {/* Status filter with badge */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full sm:w-48 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-sm sm:text-base shadow-sm transition"
+            >
+              <option value="All">All Projects</option>
+              <option value="Pending">Pending</option>
+              <option value="In Process">In Process</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          {/*Button Add Project*/}
+          <button
+            onClick={() => setShowProjectForm(true)}
+            className="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 shadow transition text-sm sm:text-base"
+          >
+            + Add Project
+          </button>
+        </div>
       </div>
 
       {/* Projects Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-        {projects.map((project) => (
+        {filteredProjects.map((project) => (
           <div
             key={project.id}
             className="bg-white rounded-2xl shadow-md p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg transition min-h-[280px]"
           >
             <div className="flex justify-between items-center mb-3">
               <span
-                className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${project.status === "Active"
-                  ? "bg-yellow-100 text-yellow-700"
-                  : project.status === "Completed"
+                className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
+                  project.status === "In Process"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : project.status === "Completed"
                     ? "bg-green-100 text-green-700"
                     : "bg-red-100 text-red-700"
-                  }`}
+                }`}
               >
                 {project.status}
               </span>
-              <button
-                onClick={() => handleEditProject(project)}
-                className="text-blue-600 hover:underline text-sm"
-              >
-                Edit
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleEditProject(project)}
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  <Pencil size={16} />
+                </button>
+                <button
+                  onClick={() => handleDeleteClick(project)}
+                  className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
 
             <Link to={`/projects/${project.id}`} className="flex-1">
@@ -272,12 +356,13 @@ export default function Projects() {
             <div className="mb-4">
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div
-                  className={`h-2.5 rounded-full transition-all duration-300 ${project.status === "Completed"
-                    ? "bg-green-500"
-                    : project.status === "Active"
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                    project.status === "Completed"
+                      ? "bg-green-500"
+                      : project.status === "In Process"
                       ? "bg-yellow-500"
                       : "bg-gray-400"
-                    }`}
+                  }`}
                   style={{ width: `${project.progress ?? 0}%` }}
                 ></div>
               </div>
@@ -315,7 +400,7 @@ export default function Projects() {
       </div>
 
       {/* Empty State */}
-      {projects.length === 0 && (
+      {(projects.length === 0 || filteredProjects.length === 0) && (
         <div className="text-center py-12 px-4">
           <div className="text-gray-400 text-4xl sm:text-6xl mb-4">📋</div>
           <h3 className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">
@@ -344,69 +429,12 @@ export default function Projects() {
 
       {/* Edit Project Modal */}
       {showEditForm && editProject && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">
-              Edit Project
-            </h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  value={editProject.status}
-                  onChange={(e) =>
-                    setEditProject((p) => ({ ...p, status: e.target.value }))
-                  }
-                  className="w-full border rounded-lg px-3 py-2"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Completed">Completed</option>
-                  <option value="On Hold">On Hold</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Progress (%)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={editProject.progress}
-                  onChange={(e) =>
-                    setEditProject((p) => ({
-                      ...p,
-                      progress: Math.max(
-                        0,
-                        Math.min(100, Number(e.target.value))
-                      ),
-                    }))
-                  }
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowEditForm(false)}
-                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveEdit}
-                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
+        <EditProjectInfo
+          editProject={editProject}
+          setEditProject={setEditProject}
+          handleSaveEdit={handleSaveEdit}
+          setShowEditForm={setShowEditForm}
+        />
       )}
 
       {/* Invitations Section */}
@@ -545,6 +573,13 @@ export default function Projects() {
           </>
         )}
       </div>
+      {/* Confirming Modal To Delete Project  */}
+      <ConfirmProjectDeleteModal
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        onConfirm={handleConfirmDelete}
+        project={selectedProject}
+      />
     </div>
   );
 }

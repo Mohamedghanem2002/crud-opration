@@ -26,62 +26,63 @@ export default function Profile() {
 
   const profileLink = `${window.location.origin}/profile/${auth.currentUser?.uid}`;
 
-  return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="bg-white shadow rounded-2xl p-6 space-y-6">
-        <ProfileDetails
-          userData={userData}
-          formData={formData}
-          setFormData={setFormData}
-          editMode={editMode}
-          setEditMode={setEditMode}
-          loading={loading}
-        />
+return (
+  <div className="p-4 sm:p-6 max-w-4xl mx-auto">
+    <div className="bg-gray-50 shadow-xl rounded-3xl p-6 sm:p-8 space-y-6 sm:space-y-8">
+      <ProfileDetails
+        userData={userData}
+        formData={formData}
+        setFormData={setFormData}
+        editMode={editMode}
+        setEditMode={setEditMode}
+        loading={loading}
+      />
 
-        <div className="flex gap-4 mt-4">
-          {editMode ? (
-            <>
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                {t("save")}
-              </button>
-              <button
-                onClick={() => setEditMode(false)}
-                className="px-4 py-2 border rounded hover:bg-gray-100"
-              >
-                {t("cancel")}
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => {
-                  setFormData(userData);
-                  setEditMode(true);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                {t("editProfile")}
-              </button>
-              <button
-                onClick={() => setShowShare(true)}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                {t("shareProfile")}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Share Modal */}
-      <AnimatePresence>
-        {showShare && (
-          <ShareModel profileLink={profileLink} setShowShare={setShowShare} />
+      <div className="flex flex-col sm:flex-row flex-wrap gap-4 mt-4 justify-center ">
+        {editMode ? (
+          <>
+            <button
+              onClick={handleSave}
+              className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-2xl shadow-md hover:bg-blue-700 transition-all duration-200 transform hover:scale-105"
+            >
+              {t("save")}
+            </button>
+            <button
+              onClick={() => setEditMode(false)}
+              className="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-2xl font-semibold hover:bg-gray-100 transition-all duration-200"
+            >
+              {t("cancel")}
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => {
+                setFormData(userData);
+                setEditMode(true);
+              }}
+              className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-2xl shadow-md hover:bg-blue-700 transition-all duration-200 transform hover:scale-105"
+            >
+              {t("editProfile")}
+            </button>
+            <button
+              onClick={() => setShowShare(true)}
+              className="w-full sm:w-auto px-6 py-3 bg-green-500 text-white font-semibold rounded-2xl shadow-md hover:bg-green-600 transition-all duration-200 transform hover:scale-105"
+            >
+              {t("shareProfile")}
+            </button>
+          </>
         )}
-      </AnimatePresence>
+      </div>
     </div>
-  );
+
+    {/* Share Modal */}
+    <AnimatePresence>
+      {showShare && (
+        <ShareModel profileLink={profileLink} setShowShare={setShowShare} />
+      )}
+    </AnimatePresence>
+  </div>
+);
+
 }
