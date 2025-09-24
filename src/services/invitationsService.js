@@ -1,6 +1,9 @@
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../firebaseconfig";
-import { upsertProject, removeInvitationFirebase } from "../redux/projectsSlice";
+import {
+  upsertProject,
+  removeInvitationFirebase,
+} from "../Redux/projectsSlice";
 import toast from "react-hot-toast";
 
 export const acceptInvitation = async (inv, dispatch) => {
@@ -13,7 +16,9 @@ export const acceptInvitation = async (inv, dispatch) => {
     if (!projectSnap.exists()) return toast.error("Project not found");
 
     const projectData = projectSnap.data();
-    const members = Array.isArray(projectData.members) ? projectData.members : [];
+    const members = Array.isArray(projectData.members)
+      ? projectData.members
+      : [];
 
     const newMember = {
       userId: currentUser.uid,
@@ -27,7 +32,10 @@ export const acceptInvitation = async (inv, dispatch) => {
       status: "active",
     };
 
-    const updatedMembers = [...members.filter((m) => m.userId !== newMember.userId), newMember];
+    const updatedMembers = [
+      ...members.filter((m) => m.userId !== newMember.userId),
+      newMember,
+    ];
     await updateDoc(projectRef, { members: updatedMembers });
 
     const updatedSnap = await getDoc(projectRef);

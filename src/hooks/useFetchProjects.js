@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { auth, db } from "../../firebaseconfig";
-import { setProjects } from "../redux/projectsSlice";
+import { setProjects } from "../Redux/projectsSlice";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 

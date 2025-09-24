@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../../firebaseconfig";
 import { useDispatch } from "react-redux";
-import { setInvitations } from "../redux/projectsSlice";
+import { setInvitations } from "../Redux/projectsSlice";
 import toast from "react-hot-toast";
 
 export default function useFetchInvitations() {
