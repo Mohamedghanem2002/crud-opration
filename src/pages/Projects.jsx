@@ -14,7 +14,7 @@ import {
   upsertProject,
   removeInvitationFirebase,
   removeProject,
-} from "../redux/projectsSlice";
+} from "../Redux/projectsSlice";
 import {
   collection,
   getDocs,
