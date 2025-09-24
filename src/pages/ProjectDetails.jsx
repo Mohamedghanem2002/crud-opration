@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { addInvitationFirebase, upsertProject } from "../redux/projectsSlice";
+import { addInvitationFirebase, upsertProject } from "../Redux/projectsSlice";
 import { auth, db } from "../../firebaseconfig";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import toast from "react-hot-toast";
@@ -14,7 +14,12 @@ import TeamMembersSection from "../components/ProjectDetails/TeamMembersSection"
 import LoadingComponent from "../components/ProjectDetails/Loading";
 
 // Import utility functions
-import { getRoleIcon, getRoleColor, getStatusColor, getProgressColor } from "../components/ProjectDetails/HelperFunction";
+import {
+  getRoleIcon,
+  getRoleColor,
+  getStatusColor,
+  getProgressColor,
+} from "../components/ProjectDetails/HelperFunction";
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -128,12 +133,8 @@ export default function ProjectDetails() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="px-3 py-4 sm:px-6 lg:px-8 lg:py-8 max-w-7xl mx-auto space-y-3 sm:space-y-6">
-
         {/* Project Header */}
-        <ProjectHeader
-          project={project}
-          getProgressColor={getProgressColor}
-        />
+        <ProjectHeader project={project} getProgressColor={getProgressColor} />
 
         {/* Team Members Section */}
         <TeamMembersSection
@@ -144,7 +145,6 @@ export default function ProjectDetails() {
           getRoleColor={getRoleColor}
           getStatusColor={getStatusColor}
         />
-
       </div>
 
       {/* Modals */}
