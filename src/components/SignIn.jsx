@@ -29,7 +29,11 @@ export default function SignIn() {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
       localStorage.setItem(
@@ -54,11 +58,14 @@ export default function SignIn() {
       setLoading(false);
     }
   };
+  if (loading) return <SpinnerOverlay />;
+  {
+    /* <SpinnerOverlay loading={loading} /> */
+  }
 
   return (
     <>
-      <SpinnerOverlay loading={loading} />
-      <div className="p-4 border rounded-md w-full max-w-sm mx-auto shadow-md bg-white sm:my-8 px-4">
+      {/* <div className="p-4 border rounded-md w-full max-w-sm mx-auto shadow-md bg-white sm:my-8 px-4">
         <div>
           <div className="flex items-center justify-center gap-1 mb-6">
             <CheckSquare className="text-blue-950" size={20} />
@@ -133,7 +140,83 @@ export default function SignIn() {
             </Link>
           </p>
         </form>
-      </div>
+      </div> */}
+      <>
+        <div>
+          <div className="flex items-center justify-center gap-1 mb-6">
+            <CheckSquare className="text-blue-950" size={20} />
+            <h1 className="text-xl font-extrabold tracking-wide text-blue-950">
+              {t("appName")}
+            </h1>
+          </div>
+        </div>
+        <h2 className="text-2xl font-semibold text-center mb-4">
+          {t("auth.signIn")}
+        </h2>
+        <form onSubmit={handleSignIn} className="flex flex-col gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t("auth.signInEmail")}
+            </label>
+            <input
+              type="email"
+              className="w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm text-sm"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="relative">
+            <label className="block text-sm font-medium mb-1">
+              {t("auth.signInPassword")}
+            </label>
+            <input
+              type={showPassword ? "text" : "password"}
+              className="w-full border rounded-xl px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm text-sm"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <span
+              className="absolute right-3 top-9 text-gray-500 cursor-pointer"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
+
+          {error && (
+            <div className="p-2 text-sm text-red-700 bg-red-100 border border-red-400 rounded">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 rounded-xl font-semibold shadow hover:from-blue-700 hover:to-blue-800 transition"
+            disabled={loading}
+          >
+            {t("auth.signInSubmit")}
+          </button>
+
+          <div className="text-center text-sm">
+            <Link
+              to="/auth/forgot-password"
+              className="text-blue-600 hover:underline"
+            >
+              {t("auth.forgotPassword")}
+            </Link>
+          </div>
+
+          <p className="mt-3 text-center text-sm">
+            {t("auth.dontHaveAccount")}{" "}
+            <Link to="/auth/sign-up" className="text-blue-600 hover:underline">
+              {t("auth.signUp")}
+            </Link>
+          </p>
+        </form>
+      </>
     </>
   );
 }

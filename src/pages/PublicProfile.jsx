@@ -47,14 +47,17 @@ export default function PublicProfile() {
 
   if (!userData)
     return (
-      <div className="h-screen flex justify-center items-center">
-        <div className="p-6 max-w-4xl mx-auto">
-          <div className="bg-white shadow rounded-2xl p-6 space-y-6">
-            <p className="text-center text-gray-500">{t("userNotFound")}</p>
-            <div className="flex gap-4 mt-4">
-              <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mx-auto">
-                <Link to="/">{t("backHome")}</Link>
-              </button>
+      <div className="min-h-screen flex justify-center items-center px-4">
+        <div className="w-full max-w-2xl">
+          <div className="bg-white shadow rounded-2xl p-6 space-y-6 text-center">
+            <p className="text-gray-500">{t("userNotFound")}</p>
+            <div className="flex justify-center">
+              <Link
+                to="/"
+                className="px-5 py-2 bg-blue-600 text-white font-medium rounded-xl shadow hover:bg-blue-700 transition"
+              >
+                {t("backHome")}
+              </Link>
             </div>
           </div>
         </div>
@@ -62,15 +65,18 @@ export default function PublicProfile() {
     );
 
   return (
-    <div className="h-screen flex justify-center items-center">
-      <div className="p-6 max-w-4xl mx-auto">
+    <div className="min-h-screen flex justify-center items-center px-4">
+      <div className="w-full max-w-3xl">
         <div className="bg-white shadow rounded-2xl p-6 space-y-6">
-          <div className="flex items-center justify-center gap-1 mb-6">
-            <CheckSquare className="text-blue-950" size={24} />
-            <h1 className="text-xl font-extrabold tracking-wide text-blue-950">
+          {/* Header */}
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <CheckSquare className="text-blue-950" size={26} />
+            <h1 className="text-xl md:text-2xl font-extrabold tracking-wide text-blue-950">
               {t("appName")}
             </h1>
           </div>
+
+          {/* Profile details */}
           <ProfileDetails
             userData={userData}
             formData={{}}
@@ -78,10 +84,15 @@ export default function PublicProfile() {
             editMode={false}
             isPublic={true}
           />
-          <div className="flex gap-4 mt-4">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mx-auto">
-              <Link to="/auth/sign-up">{t("joinUs")}</Link>
-            </button>
+
+          {/* CTA */}
+          <div className="flex justify-center">
+            <Link
+              to="/auth/sign-up"
+              className="px-5 py-2 bg-blue-600 text-white font-medium rounded-xl shadow hover:bg-blue-700 transition"
+            >
+              {t("joinUs")}
+            </Link>
           </div>
         </div>
       </div>

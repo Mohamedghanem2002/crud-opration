@@ -1,4 +1,4 @@
-.container-auth{
+/* .container-auth{
     min-height: 65vh;
 }
 
@@ -24,16 +24,16 @@
 
 .link-txt a:hover{
     color: var(--secondary-hoverd);
-}
+}*/
 /* 
 .eye-icon{
     top: 0;
     transform: translateY(150%);
     cursor: pointer;
 } */
-
+/*
 .eye-icon {
     top: 50%;
     transform: translateY(30%);
     cursor: pointer;
-}
+} */
