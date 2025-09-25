@@ -26,7 +26,7 @@ import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
-   const { t } = useTranslation();
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     completed: 0,
     pending: 0,
@@ -131,23 +131,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* 🔹 Active Projects */}
-        <Card className="rounded-2xl shadow p-4 bg-white flex items-center gap-4">
-          <ListTodo className="text-purple-500" size={30} />
-          <CardContent>
-            <h2 className="text-lg font-semibold text-gray-800">Active Projects</h2>
-            <p className="text-2xl font-bold text-gray-900">{stats.activeProjects}</p>
-          </CardContent>
-        </Card>
 
-        {/* 🔹 Pending Invitations */}
-        <Card className="rounded-2xl shadow p-4 bg-white flex items-center gap-4">
-          <Users className="text-red-500" size={30} />
-          <CardContent>
-            <h2 className="text-lg font-semibold text-gray-800">Pending Invites</h2>
-            <p className="text-2xl font-bold text-gray-900">{stats.invitations}</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Charts */}
