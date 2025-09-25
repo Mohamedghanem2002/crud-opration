@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { db } from "../../firebaseconfig";
+import { db, auth } from "../../firebaseconfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -29,6 +29,13 @@ export default function AddItem() {
     try {
       setLoading(true);
 
+      const user = auth.currentUser;
+      if (!user) {
+        toast.error(t("authRequired"));
+        setLoading(false);
+        return;
+      }
+
       await addDoc(collection(db, "tasks"), {
         title: taskData.title,
         description: taskData.description,
@@ -37,12 +44,13 @@ export default function AddItem() {
           : null,
         priority: taskData.priority,
         createdAt: serverTimestamp(),
+        uid: user.uid, // ✅ مهم جداً عشان يربط التاسك باليوزر
       });
 
       toast.success(t("success"));
       navigate("/Tasks");
     } catch (error) {
-      console.error("Error creating task:", error.response || error);
+      console.error("Error creating task:", error);
       toast.error(t("error"));
     } finally {
       setLoading(false);
@@ -57,7 +65,10 @@ export default function AddItem() {
       >
         {/* Title */}
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold text-slate-500" htmlFor="title">
+          <label
+            className="text-sm font-semibold text-slate-500"
+            htmlFor="title"
+          >
             {t("title")}
           </label>
           <input
@@ -66,13 +77,18 @@ export default function AddItem() {
             placeholder={t("title")}
             className="border border-slate-300 rounded-lg px-3 py-2 text-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none w-full"
             value={taskData.title}
-            onChange={(e) => setTaskData({ ...taskData, title: e.target.value })}
+            onChange={(e) =>
+              setTaskData({ ...taskData, title: e.target.value })
+            }
           />
         </div>
 
         {/* Description */}
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold text-slate-500" htmlFor="description">
+          <label
+            className="text-sm font-semibold text-slate-500"
+            htmlFor="description"
+          >
             {t("description")}
           </label>
           <textarea
@@ -90,7 +106,10 @@ export default function AddItem() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {/* Due Date */}
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-slate-500" htmlFor="dueDate">
+            <label
+              className="text-sm font-semibold text-slate-500"
+              htmlFor="dueDate"
+            >
               {t("dueDate")}
             </label>
             <input
@@ -106,7 +125,10 @@ export default function AddItem() {
 
           {/* Priority */}
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-slate-500" htmlFor="priority">
+            <label
+              className="text-sm font-semibold text-slate-500"
+              htmlFor="priority"
+            >
               {t("priority")}
             </label>
             <select
@@ -118,8 +140,8 @@ export default function AddItem() {
               }
             >
               <option value="High">{t("high")}</option>
-          <option value="Medium">{t("medium")}</option>
-          <option value="Low">{t("low")}</option>
+              <option value="Medium">{t("medium")}</option>
+              <option value="Low">{t("low")}</option>
             </select>
           </div>
         </div>

@@ -6,8 +6,10 @@ import {
   doc,
   onSnapshot,
   updateDoc,
+  query,
+  where,
 } from "firebase/firestore";
-import { db } from "../../firebaseconfig";
+import { db, auth } from "../../firebaseconfig";
 import EditItem from "./EditItem";
 import { useTranslation } from "react-i18next";
 
@@ -17,10 +19,18 @@ export default function TaskList() {
   const [editingTaskId, setEditingTaskId] = useState(null);
   const { t } = useTranslation();
 
-  // 🔹 Fetch tasks (real-time)
   useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) {
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
+
+    const q = query(collection(db, "tasks"), where("uid", "==", user.uid));
+
     const unsubscribe = onSnapshot(
-      collection(db, "tasks"),
+      q,
       (snapshot) => {
         const taskData = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -39,7 +49,6 @@ export default function TaskList() {
     return () => unsubscribe();
   }, [t]);
 
-  // 🔹 Delete
   const handleDelete = async (id) => {
     if (!confirm(t("tasks.deleteConfirm"))) return;
 
@@ -64,7 +73,6 @@ export default function TaskList() {
     }
   };
 
-  // 🔹 Update after edit
   const handleTaskUpdated = (updatedTask) => {
     setTasks((prev) =>
       prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
@@ -104,7 +112,8 @@ export default function TaskList() {
                     {task.description}
                   </p>
                   <small className="block text-slate-500 mt-1 text-xs sm:text-sm">
-                    {t("tasks.due")}: {task.dueDate?.split("T")[0] || t("tasks.noDeadline")} |{" "}
+                    {t("tasks.due")}:{" "}
+                    {task.dueDate?.split("T")[0] || t("tasks.noDeadline")} |{" "}
                     {t("tasks.priority")}: {t(task.priority.toLowerCase())}
                   </small>
                 </div>
@@ -142,7 +151,9 @@ export default function TaskList() {
       {editingTaskId && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-3">
           <div className="bg-white rounded-lg p-6 w-[95%] sm:w-[90%] md:w-[80%] lg:w-[60%] xl:w-[40%] shadow-lg max-h-[90vh] overflow-y-auto">
-            <h2 className="font-bold text-lg mb-3 text-slate-700">{t("tasks.editTask")}</h2>
+            <h2 className="font-bold text-lg mb-3 text-slate-700">
+              {t("tasks.editTask")}
+            </h2>
             <EditItem
               taskId={editingTaskId}
               onClose={() => setEditingTaskId(null)}
