@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { auth, db } from "/firebaseconfig";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { isValidPhoneNumber } from "libphonenumber-js";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
@@ -20,8 +29,29 @@ export function useProfileData() {
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
 
+        // ✅ Query tasks للـ user
+        const tasksQuery = query(
+          collection(db, "tasks"),
+          where("uid", "==", user.uid)
+        );
+        const tasksSnap = await getDocs(tasksQuery);
+
+        let completed = 0;
+        let pending = 0;
+
+        tasksSnap.forEach((taskDoc) => {
+          const task = taskDoc.data();
+          if (task.status === "completed") completed++;
+          else pending++;
+        });
+
         if (docSnap.exists()) {
-          setUserData(docSnap.data());
+          setUserData({
+            ...docSnap.data(),
+            completedTasks: completed,
+            pendingTasks: pending,
+            projectsCount: projects.length,
+          });
         } else {
           await setDoc(docRef, {
             name: user.displayName || "",
@@ -32,10 +62,10 @@ export function useProfileData() {
             dob: "",
             location: "",
             links: [],
-            memberSince: user.memberSince,
-            lastLogin: user.lastLogin,
-            completedTasks: 0,
-            pendingTasks: 0,
+            memberSince: user.metadata.creationTime,
+            lastLogin: user.metadata.lastSignInTime,
+            completedTasks: completed,
+            pendingTasks: pending,
             projectsCount: projects.length,
           });
           const newSnap = await getDoc(docRef);
@@ -46,7 +76,7 @@ export function useProfileData() {
     };
 
     fetchProfile();
-  }, []);
+  }, [projects]);
 
   const handleSave = async () => {
     if (!auth.currentUser) return;
