@@ -28,7 +28,7 @@ function DynamicList({
       <label className="block text-gray-700 font-medium mb-2">{label}</label>
       <div className="space-y-3">
         {items?.map((item, i) => (
-          <div key={i} className="flex flex-col sm:flex-row gap-3">
+          <div key={i} className="flex flex-col md:flex-row gap-3">
             {isLink ? (
               <>
                 <input
