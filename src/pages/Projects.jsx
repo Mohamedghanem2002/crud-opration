@@ -264,45 +264,209 @@ export default function Projects() {
     }
   };
 
+  // return (
+  //   <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 min-h-screen">
+  //     {/* Header */}
+  // <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+  //   <h2 className="text-2xl font-semibold text-gray-800">Projects</h2>
+
+  //   <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+  //     {/* Search */}
+  //     <div className="relative w-full md:w-64">
+  //       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+  //         <Search size={16} />
+  //       </span>
+
+  //       <input
+  //         type="text"
+  //         placeholder="Search..."
+  //         className="w-full rounded-xl border-gray-300 pl-10 pr-3 py-2"
+  //       />
+  //     </div>
+
+  //     {/* Filter */}
+  //     <select className="w-full md:w-auto rounded-xl border-gray-300 py-2 px-3">
+  //       <option>All</option>
+  //       <option>Pending</option>
+  //       <option>Completed</option>
+  //     </select>
+  //   </div>
+
+  //   <button className="w-full md:w-auto bg-indigo-600 text-white py-2 px-4 rounded-xl md:text-sm">
+  //     + Add Project
+  //   </button>
+  // </div>
+
+  //     {/* Projects Grid */}
+  //     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ">
+  //       {filteredProjects.map((project) => (
+  //         <Link to={`/projects/${project.id}`} className="flex-1" key={project.id}>
+  //           <div
+  //             className="group bg-white rounded-2xl shadow-md p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg transition min-h-[280px] cursor-pointer"
+  //           >
+  //             <div className="flex justify-between items-center mb-3">
+  //               <span
+  //                 className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
+  //                   project.status === "In Process"
+  //                     ? "bg-yellow-100 text-yellow-700"
+  //                     : project.status === "Completed"
+  //                     ? "bg-green-100 text-green-700"
+  //                     : "bg-red-100 text-red-700"
+  //                 }`}
+  //               >
+  //                 {project.status}
+  //               </span>
+  //               <div className="flex gap-3">
+  //                 <button
+  //                   onClick={() => handleEditProject(project)}
+  //                   className="text-blue-600 hover:underline text-sm"
+  //                 >
+  //                   <Pencil size={16} />
+  //                 </button>
+  //                 <button
+  //                   onClick={() => handleDeleteClick(project)}
+  //                   className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm"
+  //                 >
+  //                   <Trash2 size={16} />
+  //                 </button>
+  //               </div>
+  //             </div>
+
+  //             <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2 hover:text-blue-600 group-hover:text-blue-600 transition line-clamp-2">
+  //               {project.name}
+  //             </h2>
+  //             <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-1">
+  //               {project.description}
+  //             </p>
+
+  //             <div className="mb-4">
+  //               <div className="w-full bg-gray-200 rounded-full h-2.5">
+  //                 <div
+  //                   className={`h-2.5 rounded-full transition-all duration-300 ${
+  //                     project.status === "Completed"
+  //                       ? "bg-green-500"
+  //                       : project.status === "In Process"
+  //                       ? "bg-yellow-500"
+  //                       : "bg-gray-400"
+  //                   }`}
+  //                   style={{ width: `${project.progress ?? 0}%` }}
+  //                 ></div>
+  //               </div>
+  //               <p className="text-xs text-gray-500 mt-1">
+  //                 {project.progress ?? 0}%
+  //               </p>
+  //             </div>
+
+  //             <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
+  //               <div className="flex -space-x-1 sm:-space-x-2">
+  //                 {project.members?.slice(0, 3).map((m, index) => (
+  //                   <span
+  //                     key={m.userId ?? index}
+  //                     className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-bold border-2 border-white"
+  //                     title={m.name || m.email}
+  //                   >
+  //                     {(m.name && m.name.charAt(0)) ||
+  //                       (m.email && m.email.charAt(0)) ||
+  //                       "?"}
+  //                   </span>
+  //                 ))}
+  //                 {project.members?.length > 3 && (
+  //                   <span className="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-100 text-gray-600 text-xs font-bold border-2 border-white">
+  //                     +{project.members.length - 3}
+  //                   </span>
+  //                 )}
+  //               </div>
+  //               <span className="text-right">
+  //                 <span className="hidden sm:inline">Updated </span>
+  //                 {formatDate(project.updated)}
+  //               </span>
+  //             </div>
+  //           </div>
+  //         </Link>
+  //       ))}
+  //     </div>
+
+  //     {/* Empty State */}
+  //     {(projects.length === 0 || filteredProjects.length === 0) && (
+  //       <div className="text-center py-12 px-4">
+  //         <div className="text-gray-400 text-4xl sm:text-6xl mb-4">📋</div>
+  //         <h3 className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">
+  //           No projects yet
+  //         </h3>
+  //         <p className="text-gray-500 mb-6">
+  //           Create your first project to get started
+  //         </p>
+  //         <button
+  //           onClick={() => setShowProjectForm(true)}
+  //           className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
+  //         >
+  //           Create Project
+  //         </button>
+  //       </div>
+  //     )}
+
+  //     {/* Invitations Section */}
+  //     <div className="bg-white rounded-2xl shadow-md p-4 sm:p-6">
+  //       <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
+  //         Pending Invitations
+  //       </h2>
+
+  //       {invitations.length === 0 ? (
+  //         <p className="text-gray-500 text-sm text-center py-8">
+  //           No pending invitations
+  //         </p>
+  //       ) : (
+  //         <>
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 min-h-screen">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h2 className="text-2xl font-semibold text-gray-800">Projects</h2>
-
-        <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-          {/* Search */}
-          <div className="relative w-full md:w-64">
+        {/* Title */}
+        <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+          Projects
+        </h2>
+        {/* Search + Filter */}
+        <div className="flex flex-col justify-center sm:flex-row gap-2 w-full sm:w-auto items-start sm:items-center">
+          <div className="relative w-full sm:w-64">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               <Search size={16} />
             </span>
-
             <input
               type="text"
-              placeholder="Search..."
-              className="w-full rounded-xl border-gray-300 pl-10 pr-3 py-2"
+              placeholder="Search projects..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 shadow-sm text-sm sm:text-base transition"
             />
           </div>
 
-          {/* Filter */}
-          <select className="w-full md:w-auto rounded-xl border-gray-300 py-2 px-3">
-            <option>All</option>
-            <option>Pending</option>
-            <option>Completed</option>
+          {/* Status filter with badge */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full sm:w-48 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-sm sm:text-base shadow-sm transition"
+          >
+            <option value="All">All Projects</option>
+            <option value="Pending">Pending</option>
+            <option value="In Process">In Process</option>
+            <option value="Completed">Completed</option>
           </select>
         </div>
-
-        <button className="w-full md:w-auto bg-indigo-600 text-white py-2 px-4 rounded-xl md:text-sm">
+        {/*Button Add Project*/}
+        <button
+          onClick={() => setShowProjectForm(true)}
+          className="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 shadow transition text-sm sm:text-base"
+        >
           + Add Project
         </button>
       </div>
 
       {/* Projects Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {filteredProjects.map((project) => (
           <div
             key={project.id}
-            className="group bg-white rounded-2xl shadow-md p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg transition min-h-[280px]"
+            className="bg-white rounded-2xl shadow-md p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg transition min-h-[280px]"
           >
             <div className="flex justify-between items-center mb-3">
               <span
@@ -332,34 +496,36 @@ export default function Projects() {
               </div>
             </div>
 
-            <Link to={`/projects/${project.id}`} className="cursor-pointer">
+            <Link to={`/projects/${project.id}`}>
               <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2 hover:text-blue-600 transition line-clamp-2">
                 {project.name}
               </h2>
             </Link>
-            <Link to={`/projects/${project.id}`} className="cursor-pointer">
+            <Link to={`/projects/${project.id}`}>
               <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-1">
                 {project.description}
               </p>
             </Link>
-            <div className="mb-4">
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div
-                  className={`h-2.5 rounded-full transition-all duration-300 ${
-                    project.status === "Completed"
-                      ? "bg-green-500"
-                      : project.status === "In Process"
-                      ? "bg-yellow-500"
-                      : "bg-gray-400"
-                  }`}
-                  style={{ width: `${project.progress ?? 0}%` }}
-                ></div>
+            <Link to={`/projects/${project.id}`}>
+              <div className="mb-4">
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className={`h-2.5 rounded-full transition-all duration-300 ${
+                      project.status === "Completed"
+                        ? "bg-green-500"
+                        : project.status === "In Process"
+                        ? "bg-yellow-500"
+                        : "bg-gray-400"
+                    }`}
+                    style={{ width: `${project.progress ?? 0}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {project.progress ?? 0}%
+                </p>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {project.progress ?? 0}%
-              </p>
-            </div>
-            <Link to={`/projects/${project.id}`} className="cursor-pointer">
+            </Link>
+            <Link to={`/projects/${project.id}`}>
               <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
                 <div className="flex -space-x-1 sm:-space-x-2">
                   {project.members?.slice(0, 3).map((m, index) => (
@@ -406,6 +572,25 @@ export default function Projects() {
             Create Project
           </button>
         </div>
+      )}
+
+      {showProjectForm && (
+        <AddProjectModal
+          newProject={newProject}
+          onChange={handleProjectChange}
+          onClose={() => setShowProjectForm(false)}
+          onSave={handleAddProject}
+        />
+      )}
+
+      {/* Edit Project Modal */}
+      {showEditForm && editProject && (
+        <EditProjectInfo
+          editProject={editProject}
+          setEditProject={setEditProject}
+          handleSaveEdit={handleSaveEdit}
+          setShowEditForm={setShowEditForm}
+        />
       )}
 
       {/* Invitations Section */}
@@ -544,8 +729,7 @@ export default function Projects() {
           </>
         )}
       </div>
-
-      {/* Confirm Delete Modal */}
+      {/* Confirming Modal To Delete Project  */}
       <ConfirmProjectDeleteModal
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
