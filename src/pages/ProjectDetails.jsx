@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { addInvitationFirebase, upsertProject } from "../Redux/projectsSlice";
 import { auth, db } from "../../firebaseconfig";
@@ -27,8 +27,9 @@ export default function ProjectDetails() {
 
   // Redux state
   const projects = useSelector((state) => state.projects.projects);
-  const project = projects.find((p) => p.id.toString() === id);
-
+  // const project = projects.find((p) => p.id.toString() === id);
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
   // Local state
   const [selectedMember, setSelectedMember] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -125,10 +126,48 @@ export default function ProjectDetails() {
     setSelectedMember(null);
   };
 
+//get Project
+    useEffect(() => {
+    const loadProject = async () => {
+      // الأول جرب تجيبه من الـRedux
+      const existing = projects.find((p) => p.id.toString() === id);
+      if (existing) {
+        setProject(existing);
+        setLoading(false);
+        return;
+      }
+
+      // لو مش موجود → هات من Firebase
+      try {
+        const projectRef = doc(db, "projects", id);
+        const snap = await getDoc(projectRef);
+        if (snap.exists()) {
+          const data = { id: snap.id, ...snap.data() };
+          setProject(data);
+          // حدّثي الـRedux كمان
+          dispatch(upsertProject(data));
+        }
+      } catch (err) {
+        console.error("Error fetching project:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProject();
+  }, [id, projects, dispatch]);
+
+
   // Loading state
-  if (!project) {
+  if (loading) {
     return <LoadingComponent message="Loading project..." />;
   }
+
+  //Can't Find Project
+  if (!project) {
+    return <div>Project not found</div>;
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-50">

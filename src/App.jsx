@@ -115,7 +115,7 @@ function AppContent() {
                 }
               />
               <Route
-                path="/projects/:id"
+                path="projects/:id"
                 element={
                   <ProtectedRoute>
                     <PageWrapper>

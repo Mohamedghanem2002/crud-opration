@@ -300,63 +300,66 @@ export default function Projects() {
       {/* Projects Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ">
         {filteredProjects.map((project) => (
-          <Link to={`/projects/${project.id}`} className="flex-1" key={project.id}>
-            <div
-              className="group bg-white rounded-2xl shadow-md p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg transition min-h-[280px] cursor-pointer"
-            >
-              <div className="flex justify-between items-center mb-3">
-                <span
-                  className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
-                    project.status === "In Process"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : project.status === "Completed"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
+          <div
+            key={project.id}
+            className="group bg-white rounded-2xl shadow-md p-4 sm:p-5 flex flex-col justify-between hover:shadow-lg transition min-h-[280px]"
+          >
+            <div className="flex justify-between items-center mb-3">
+              <span
+                className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
+                  project.status === "In Process"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : project.status === "Completed"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {project.status}
+              </span>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleEditProject(project)}
+                  className="text-blue-600 hover:underline text-sm"
                 >
-                  {project.status}
-                </span>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => handleEditProject(project)}
-                    className="text-blue-600 hover:underline text-sm"
-                  >
-                    <Pencil size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(project)}
-                    className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+                  <Pencil size={16} />
+                </button>
+                <button
+                  onClick={() => handleDeleteClick(project)}
+                  className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
+            </div>
 
-              <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2 hover:text-blue-600 group-hover:text-blue-600 transition line-clamp-2">
+            <Link to={`/projects/${project.id}`} className="cursor-pointer">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2 hover:text-blue-600 transition line-clamp-2">
                 {project.name}
               </h2>
+            </Link>
+            <Link to={`/projects/${project.id}`} className="cursor-pointer">
               <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-1">
                 {project.description}
               </p>
-
-              <div className="mb-4">
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    className={`h-2.5 rounded-full transition-all duration-300 ${
-                      project.status === "Completed"
-                        ? "bg-green-500"
-                        : project.status === "In Process"
-                        ? "bg-yellow-500"
-                        : "bg-gray-400"
-                    }`}
-                    style={{ width: `${project.progress ?? 0}%` }}
-                  ></div>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {project.progress ?? 0}%
-                </p>
+            </Link>
+            <div className="mb-4">
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                    project.status === "Completed"
+                      ? "bg-green-500"
+                      : project.status === "In Process"
+                      ? "bg-yellow-500"
+                      : "bg-gray-400"
+                  }`}
+                  style={{ width: `${project.progress ?? 0}%` }}
+                ></div>
               </div>
-
+              <p className="text-xs text-gray-500 mt-1">
+                {project.progress ?? 0}%
+              </p>
+            </div>
+            <Link to={`/projects/${project.id}`} className="cursor-pointer">
               <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
                 <div className="flex -space-x-1 sm:-space-x-2">
                   {project.members?.slice(0, 3).map((m, index) => (
@@ -381,8 +384,8 @@ export default function Projects() {
                   {formatDate(project.updated)}
                 </span>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </div>
         ))}
       </div>
 
